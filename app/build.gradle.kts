@@ -22,6 +22,10 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     buildTypes {
         debug {
             buildConfigField("String", "KAKAO_API_KEY", gradleLocalProperties(rootDir, providers).getProperty("KAKAO_API_KEY"))
