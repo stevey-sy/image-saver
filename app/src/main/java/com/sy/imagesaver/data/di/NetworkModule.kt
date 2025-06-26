@@ -1,17 +1,72 @@
 package com.sy.imagesaver.data.di
 
+import KakaoApiService
+import com.sy.imagesaver.BuildConfig
 import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
+import retrofit2.Retrofit
+import retrofit2.converter.moshi.MoshiConverterFactory
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-interface NetworkModule {
+object NetworkModule {
+    
+    @Provides
+    @Singleton
+    fun provideKakaoApiInterceptor(): Interceptor {
+        return Interceptor { chain ->
+            val original = chain.request()
+            val request = original.newBuilder()
+                .header("Authorization", BuildConfig.KAKAO_API_KEY)
+                .method(original.method, original.body)
+                .build()
+            chain.proceed(request)
+        }
+    }
+    
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(interceptor: Interceptor): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(interceptor)
+            .build()
+    }
+    
+    @Provides
+    @Singleton
+    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl("https://dapi.kakao.com/v2/search")
+            .client(okHttpClient)
+            .addConverterFactory(MoshiConverterFactory.create())
+            .build()
+    }
+    
+    @Provides
+    @Singleton
+    fun provideKakaoApiService(retrofit: Retrofit): KakaoApiService {
+        return retrofit.create(KakaoApiService::class.java)
+    }
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+interface NetworkModuleBinds {
     @Binds
     @Singleton
-    fun bindsNetworkDataSource(
-
-    )
+    fun bindImageRemoteDataSource(
+        imageRemoteDataSourceImpl: com.sy.imagesaver.data.remote.datasource.ImageRemoteDataSourceImpl
+    ): com.sy.imagesaver.data.remote.datasource.ImageRemoteDataSource
+    
+    @Binds
+    @Singleton
+    fun bindVideoRemoteDataSource(
+        videoRemoteDataSourceImpl: com.sy.imagesaver.data.remote.datasource.VideoRemoteDataSourceImpl
+    ): com.sy.imagesaver.data.remote.datasource.VideoRemoteDataSource
 }
