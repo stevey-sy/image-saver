@@ -1,7 +1,7 @@
 package com.sy.imagesaver.data.remote.datasource
 
-import KakaoApiService
 import com.sy.imagesaver.data.remote.dto.KakaoVideoResponseDto
+import com.sy.imagesaver.data.remote.service.KakaoApiService
 import javax.inject.Inject
 
 class VideoRemoteDataSourceImpl @Inject constructor(
