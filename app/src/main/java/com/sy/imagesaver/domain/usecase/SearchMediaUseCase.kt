@@ -6,10 +6,12 @@ import com.sy.imagesaver.domain.data.Media
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
+import kotlin.time.ExperimentalTime
 
 class SearchMediaUseCase @Inject constructor(
     private val mediaRepository: MediaRepository
 ) {
+    @OptIn(ExperimentalTime::class)
     operator fun invoke(
         query: String,
         page: Int = 1,
