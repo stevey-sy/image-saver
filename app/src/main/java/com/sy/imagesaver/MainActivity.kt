@@ -23,24 +23,27 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.sy.imagesaver.presentation.bookmark.BookmarkScreen
+import com.sy.imagesaver.presentation.navigation.NavGraph
 import com.sy.imagesaver.presentation.navigation.Screen
-import com.sy.imagesaver.presentation.search.SearchScreen
+import com.sy.imagesaver.presentation.search.VideoPlayerManager
 import com.sy.imagesaver.presentation.theme.ImageSaverTheme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    
+    @Inject
+    lateinit var videoPlayerManager: VideoPlayerManager
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             ImageSaverTheme {
-                MainScreen()
+                MainScreen(videoPlayerManager)
             }
         }
     }
@@ -48,7 +51,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(videoPlayerManager: VideoPlayerManager) {
     val navController = rememberNavController()
     
     Scaffold(
@@ -87,18 +90,11 @@ fun MainScreen() {
             }
         }
     ) { innerPadding ->
-        NavHost(
+        NavGraph(
             navController = navController,
-            startDestination = Screen.Bookmark.route,
+            videoPlayerManager = videoPlayerManager,
             modifier = Modifier.padding(innerPadding)
-        ) {
-            composable(Screen.Bookmark.route) {
-                BookmarkScreen()
-            }
-            composable(Screen.Search.route) {
-                SearchScreen()
-            }
-        }
+        )
     }
 }
 
@@ -106,6 +102,6 @@ fun MainScreen() {
 @Composable
 fun MainScreenPreview() {
     ImageSaverTheme {
-        MainScreen()
+        MainScreen(VideoPlayerManager(androidx.compose.ui.platform.LocalContext.current))
     }
 }

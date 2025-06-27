@@ -1,11 +1,13 @@
 package com.sy.imagesaver.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.sy.imagesaver.presentation.bookmark.BookmarkScreen
 import com.sy.imagesaver.presentation.search.SearchScreen
+import com.sy.imagesaver.presentation.search.VideoPlayerManager
 
 sealed class Screen(val route: String) {
     object Bookmark : Screen("bookmark")
@@ -13,16 +15,21 @@ sealed class Screen(val route: String) {
 }
 
 @Composable
-fun NavGraph(navController: NavHostController) {
+fun NavGraph(
+    navController: NavHostController,
+    videoPlayerManager: VideoPlayerManager,
+    modifier: Modifier = Modifier
+) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Bookmark.route
+        startDestination = Screen.Bookmark.route,
+        modifier = modifier
     ) {
         composable(Screen.Bookmark.route) {
             BookmarkScreen()
         }
         composable(Screen.Search.route) {
-            SearchScreen()
+            SearchScreen(videoPlayerManager = videoPlayerManager)
         }
     }
 }
