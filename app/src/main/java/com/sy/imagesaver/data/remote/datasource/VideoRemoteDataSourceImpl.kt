@@ -1,7 +1,7 @@
 package com.sy.imagesaver.data.remote.datasource
 
-import com.sy.imagesaver.data.remote.dto.VideoSearchResponseDto
-import com.sy.imagesaver.data.remote.service.KakaoApiService
+import KakaoApiService
+import com.sy.imagesaver.data.remote.dto.KakaoVideoResponseDto
 import javax.inject.Inject
 
 class VideoRemoteDataSourceImpl @Inject constructor(
@@ -12,7 +12,7 @@ class VideoRemoteDataSourceImpl @Inject constructor(
         query: String,
         page: Int,
         size: Int
-    ): VideoSearchResponseDto {
+    ): KakaoVideoResponseDto {
         return kakaoApiService.searchVideos(
             query = query,
             page = page,
