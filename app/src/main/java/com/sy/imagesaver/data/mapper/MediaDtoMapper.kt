@@ -5,8 +5,9 @@ import com.sy.imagesaver.data.remote.dto.VideoDto
 import com.sy.imagesaver.domain.data.Media
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+import javax.inject.Inject
 
-class MediaDtoMapper {
+class MediaDtoMapper @Inject constructor() {
     @OptIn(ExperimentalTime::class)
     fun fromImageDto(dto: ImageDto): Media =
         Media.Image(
