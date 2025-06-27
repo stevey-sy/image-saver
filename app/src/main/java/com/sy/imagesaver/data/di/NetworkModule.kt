@@ -69,4 +69,10 @@ interface NetworkModuleBinds {
     fun bindVideoRemoteDataSource(
         videoRemoteDataSourceImpl: com.sy.imagesaver.data.remote.datasource.VideoRemoteDataSourceImpl
     ): com.sy.imagesaver.data.remote.datasource.VideoRemoteDataSource
+    
+    @Binds
+    @Singleton
+    fun bindMediaRepository(
+        mediaRepositoryImpl: com.sy.imagesaver.data.repository.MediaRepositoryImpl
+    ): com.sy.imagesaver.data.repository.MediaRepository
 }

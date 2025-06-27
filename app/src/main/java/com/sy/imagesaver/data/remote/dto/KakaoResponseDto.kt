@@ -2,7 +2,7 @@ package com.sy.imagesaver.data.remote.dto
 
 import com.squareup.moshi.Json
 
-data class SearchResponseDto<T>(
+data class KakaoResponseDto<T>(
     @Json(name = "meta")
     val meta: MetaDto,
 
@@ -11,5 +11,5 @@ data class SearchResponseDto<T>(
 )
 
 // Type aliases for specific search responses
-typealias ImageSearchResponseDto = SearchResponseDto<ImageDto>
-typealias VideoSearchResponseDto = SearchResponseDto<VideoDto> 
+typealias KakaoImageResponseDto = KakaoResponseDto<ImageDto>
+typealias KakaoVideoResponseDto = KakaoResponseDto<VideoDto>
