@@ -1,7 +1,9 @@
 package com.sy.imagesaver.data.di
 
-import KakaoApiService
 import com.sy.imagesaver.BuildConfig
+import com.sy.imagesaver.data.remote.service.KakaoApiService
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -19,11 +21,19 @@ object NetworkModule {
     
     @Provides
     @Singleton
+    fun provideMoshi(): Moshi {
+        return Moshi.Builder()
+            .add(KotlinJsonAdapterFactory())
+            .build()
+    }
+    
+    @Provides
+    @Singleton
     fun provideKakaoApiInterceptor(): Interceptor {
         return Interceptor { chain ->
             val original = chain.request()
             val request = original.newBuilder()
-                .header("Authorization", BuildConfig.KAKAO_API_KEY)
+                .header("Authorization", "KakaoAK ${BuildConfig.KAKAO_API_KEY}")
                 .method(original.method, original.body)
                 .build()
             chain.proceed(request)
@@ -40,11 +50,11 @@ object NetworkModule {
     
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+    fun provideRetrofit(okHttpClient: OkHttpClient, moshi: Moshi): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://dapi.kakao.com/v2/search")
+            .baseUrl("https://dapi.kakao.com/")
             .client(okHttpClient)
-            .addConverterFactory(MoshiConverterFactory.create())
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
     }
     
