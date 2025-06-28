@@ -9,7 +9,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,35 +23,26 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
-import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.ui.PlayerView
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.sy.imagesaver.domain.data.Media
+import com.sy.imagesaver.presentation.theme.AppIcons
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import javax.inject.Inject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
-    viewModel: SearchViewModel = hiltViewModel(),
-    videoPlayerManager: VideoPlayerManager
+    viewModel: SearchViewModel = hiltViewModel()
 ) {
     val searchQuery by viewModel.searchQuery.collectAsState()
     val searchResult by viewModel.searchResult.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     val focusManager = LocalFocusManager.current
-    
-    val currentPlayingVideoId by videoPlayerManager.currentPlayingVideoId.collectAsState()
 
     // 검색어 입력 후 0.5초 후 자동 검색
     var isFirstLaunch by remember { mutableStateOf(true) }
@@ -67,16 +57,6 @@ fun SearchScreen(
                 }
                 isFirstLaunch = false
             }
-    }
-
-    // 검색 결과가 변경될 때 비디오 아이템 등록
-    LaunchedEffect(searchResult) {
-        videoPlayerManager.clearVideoItems()
-        searchResult?.documents?.forEachIndexed { index, media ->
-            if (media is Media.Video) {
-                videoPlayerManager.addVideoItem(media.id, media.originalUrl, index)
-            }
-        }
     }
 
     Column(
@@ -130,8 +110,6 @@ fun SearchScreen(
                 itemsIndexed(result.documents) { index, media ->
                     MediaCard(
                         media = media,
-                        isPlaying = currentPlayingVideoId == media.id,
-                        videoPlayerManager = videoPlayerManager,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -187,12 +165,9 @@ private fun SearchTextArea(
     )
 }
 
-@androidx.annotation.OptIn(UnstableApi::class)
 @Composable
 private fun MediaCard(
     media: Media,
-    isPlaying: Boolean,
-    videoPlayerManager: VideoPlayerManager,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -207,29 +182,40 @@ private fun MediaCard(
                     .fillMaxWidth()
                     .aspectRatio(1f)
             ) {
-                when (media) {
-                    is Media.Image -> {
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(media.thumbnailUrl)
-                                .crossfade(true)
-                                .build(),
-                            contentDescription = "이미지",
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(RoundedCornerShape(12.dp)),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
-                    is Media.Video -> {
-                        VideoPreview(
-                            videoUrl = media.originalUrl,
-                            isPlaying = isPlaying,
-                            videoPlayerManager = videoPlayerManager,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(RoundedCornerShape(12.dp))
-                        )
+                // 모든 미디어를 thumbnailUrl로 이미지로 표시
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(media.thumbnailUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "미디어 썸네일",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(12.dp)),
+                    contentScale = ContentScale.Crop
+                )
+
+                // 비디오인 경우 재생 버튼 오버레이
+                if (media is Media.Video) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Card(
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+                            ),
+                            shape = RoundedCornerShape(50)
+                        ) {
+                            Icon(
+                                imageVector = AppIcons.VideoType,
+                                contentDescription = "비디오",
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .padding(8.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                 }
             }
@@ -240,19 +226,30 @@ private fun MediaCard(
             ) {
                 when (media) {
                     is Media.Image -> {
-                        Text(
-                            text = "이미지",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = AppIcons.ImageType,
+                                contentDescription = "이미지",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "이미지",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                     is Media.Video -> {
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                imageVector = Icons.Default.PlayArrow,
-                                contentDescription = "재생",
+                                imageVector = AppIcons.VideoType,
+                                contentDescription = "비디오",
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(16.dp)
                             )
@@ -275,53 +272,6 @@ private fun MediaCard(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-            }
-        }
-    }
-}
-
-@UnstableApi
-@Composable
-private fun VideoPreview(
-    videoUrl: String,
-    isPlaying: Boolean,
-    videoPlayerManager: VideoPlayerManager,
-    modifier: Modifier = Modifier
-) {
-    Box(modifier = modifier) {
-        // ExoPlayer를 사용한 비디오 미리보기
-        AndroidView(
-            factory = { ctx ->
-                PlayerView(ctx).apply {
-                    player = videoPlayerManager.initializePlayer()
-                    useController = false // 컨트롤러 숨김
-                    setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
-                }
-            },
-            modifier = Modifier.fillMaxSize()
-        )
-
-        // 재생 버튼 오버레이 (재생 중이 아닐 때만 표시)
-        if (!isPlaying) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
-                    ),
-                    shape = RoundedCornerShape(50)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.PlayArrow,
-                        contentDescription = "재생",
-                        modifier = Modifier
-                            .size(32.dp)
-                            .padding(8.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
             }
         }
     }
