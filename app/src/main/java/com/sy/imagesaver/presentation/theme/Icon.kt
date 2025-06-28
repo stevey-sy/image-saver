@@ -23,5 +23,9 @@ object AppIcons {
     val CheckCircle: Painter
         @Composable
         get() = painterResource(id = R.drawable.ic_check_circle)
+
+    val BookmarkFilled: Painter
+        @Composable
+        get() = painterResource(id = R.drawable.ic_bookmark_filled)
 }
 

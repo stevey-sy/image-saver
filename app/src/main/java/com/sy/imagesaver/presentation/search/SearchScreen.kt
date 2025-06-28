@@ -3,10 +3,10 @@ package com.sy.imagesaver.presentation.search
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.items
-import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -40,7 +40,6 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import androidx.paging.PagingData
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 
@@ -91,7 +90,7 @@ fun SearchScreen(
                 }
                 val lazyPagingItems = pagingFlow.collectAsLazyPagingItems()
                 val isRefreshing = lazyPagingItems.loadState.refresh is androidx.paging.LoadState.Loading
-                val gridState = rememberLazyStaggeredGridState()
+                val gridState = rememberLazyGridState()
 
                 // 검색어가 변경될 때 스크롤 위치 초기화
                 LaunchedEffect(searchQuery) {
@@ -99,11 +98,9 @@ fun SearchScreen(
                 }
 
                 Box(modifier = Modifier.fillMaxSize()) {
-                    LazyVerticalStaggeredGrid(
-                        columns = StaggeredGridCells.Fixed(2),
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
                         modifier = Modifier.fillMaxSize(),
-                        verticalItemSpacing = 8.dp,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         contentPadding = PaddingValues(0.dp),
                         state = gridState
                     ) {
@@ -122,18 +119,20 @@ fun SearchScreen(
                                 )
                             }
                         }
-                        // Paging의 추가 로딩(append) 상태일 때도 중앙에 인디케이터
-                        if (lazyPagingItems.loadState.append is androidx.paging.LoadState.Loading) {
-                            item(span = StaggeredGridItemSpan.FullLine) {
-                                Box(
-                                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator()
-                                }
-                            }
+                    }
+                    
+                    // Paging의 추가 로딩(append) 상태일 때 중앙에 인디케이터
+                    if (lazyPagingItems.loadState.append is androidx.paging.LoadState.Loading) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            contentAlignment = Alignment.BottomCenter
+                        ) {
+                            CircularProgressIndicator()
                         }
                     }
+                    
                     // refresh(최초/새로고침) 로딩 시 중앙에 인디케이터 오버레이
                     if (isRefreshing) {
                         Box(
@@ -294,17 +293,18 @@ private fun MediaCard(
     onItemClick: () -> Unit = {}
 ) {
     Card(
-        modifier = modifier.clickable { onItemClick() },
+        modifier = modifier
+            .height(200.dp)
+            .clickable { onItemClick() },
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column {
-            // 미디어 컨텐츠 - Pinterest 스타일로 높이 자동 조정
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .weight(1f)
             ) {
-                // 모든 미디어를 thumbnailUrl로 이미지로 표시
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
                         .data(media.thumbnailUrl)
@@ -317,7 +317,6 @@ private fun MediaCard(
                     contentScale = ContentScale.Crop
                 )
                 
-                // 북마크된 경우 우측 상단에 체크 아이콘 표시
                 if (isBookmarked) {
                     Box(
                         modifier = Modifier
@@ -327,8 +326,7 @@ private fun MediaCard(
                             .background(
                                 color = MaterialTheme.colorScheme.primary,
                                 shape = RoundedCornerShape(12.dp)
-                            )
-                        ,
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -341,9 +339,11 @@ private fun MediaCard(
                 }
             }
 
-            // 미디어 정보
             Column(
-                modifier = Modifier.padding(12.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp)
+                    .padding(12.dp)
             ) {
                 when (media) {
                     is MediaUiModel.Image -> {
@@ -361,7 +361,7 @@ private fun MediaCard(
                                 text = media.datetime,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 2,
+                                maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
@@ -381,7 +381,7 @@ private fun MediaCard(
                                 text = media.datetime,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 2,
+                                maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
                         }

@@ -35,11 +35,22 @@ fun BookMarkScreen(
             .padding(16.dp)
     ) {
         // 헤더
-        Text(
-            text = "저장된 미디어",
-            style = MaterialTheme.typography.headlineMedium,
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(bottom = 16.dp)
-        )
+        ) {
+            Icon(
+                painter = AppIcons.BookmarkFilled,
+                contentDescription = "북마크",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "저장된 미디어",
+                style = MaterialTheme.typography.headlineMedium
+            )
+        }
 
         // 로딩 상태
         if (isLoading) {
