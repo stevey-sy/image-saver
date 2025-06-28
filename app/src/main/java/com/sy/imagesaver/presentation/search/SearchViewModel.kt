@@ -16,6 +16,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
@@ -31,12 +33,13 @@ class SearchViewModel @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
     
-    private val _saveStatus = MutableStateFlow<SaveStatus>(SaveStatus.Idle)
-    val saveStatus: StateFlow<SaveStatus> = _saveStatus.asStateFlow()
-    
     // 북마크된 아이템의 thumbnailUrl을 추적
     private val _bookmarkedThumbnailUrls = MutableStateFlow<Set<String>>(emptySet())
     val bookmarkedThumbnailUrls: StateFlow<Set<String>> = _bookmarkedThumbnailUrls.asStateFlow()
+    
+    // SnackBar 메시지를 위한 이벤트
+    private val _snackBarEvent = MutableSharedFlow<SnackBarEvent>()
+    val snackBarEvent = _snackBarEvent.asSharedFlow()
     
     init {
         // 앱 시작 시 기존 북마크된 아이템들 로드
@@ -100,35 +103,30 @@ class SearchViewModel @Inject constructor(
     fun saveMedia(mediaUiModel: MediaUiModel) {
         viewModelScope.launch {
             try {
-                _saveStatus.value = SaveStatus.Saving
-                
                 // MediaUiModel을 Media로 변환
                 val media = mediaUiModelMapper.toMedia(mediaUiModel)
                 
                 val id = saveMediaUseCase(media)
-                _saveStatus.value = SaveStatus.Success("미디어가 저장되었습니다. (ID: $id)")
                 
                 // 저장 성공 시 해당 아이템을 북마크 목록에 추가
                 _bookmarkedThumbnailUrls.value = _bookmarkedThumbnailUrls.value + mediaUiModel.thumbnailUrl
                 
-                // 3초 후 상태 초기화
-                kotlinx.coroutines.delay(3000)
-                _saveStatus.value = SaveStatus.Idle
+                // SnackBar 이벤트 발생
+                _snackBarEvent.emit(
+                    SnackBarEvent.Success("미디어가 저장되었습니다. (ID: $id)")
+                )
                 
             } catch (e: Exception) {
-                _saveStatus.value = SaveStatus.Error("저장에 실패했습니다: ${e.message}")
-                
-                // 3초 후 상태 초기화
-                kotlinx.coroutines.delay(3000)
-                _saveStatus.value = SaveStatus.Idle
+                // SnackBar 이벤트 발생
+                _snackBarEvent.emit(
+                    SnackBarEvent.Error("저장에 실패했습니다: ${e.message}")
+                )
             }
         }
     }
     
-    sealed class SaveStatus {
-        object Idle : SaveStatus()
-        object Saving : SaveStatus()
-        data class Success(val message: String) : SaveStatus()
-        data class Error(val message: String) : SaveStatus()
+    sealed class SnackBarEvent {
+        data class Success(val message: String) : SnackBarEvent()
+        data class Error(val message: String) : SnackBarEvent()
     }
 }
