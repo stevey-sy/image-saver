@@ -1,4 +1,4 @@
-package com.sy.imagesaver.data.di
+package com.sy.imagesaver.di
 
 import com.sy.imagesaver.BuildConfig
 import com.sy.imagesaver.data.remote.service.KakaoApiService
@@ -85,4 +85,4 @@ interface NetworkModuleBinds {
     fun bindMediaRepository(
         mediaRepositoryImpl: com.sy.imagesaver.data.repository.MediaRepositoryImpl
     ): com.sy.imagesaver.data.repository.MediaRepository
-}
+} 
