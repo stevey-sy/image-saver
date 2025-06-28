@@ -1,6 +1,7 @@
 package com.sy.imagesaver.presentation.search
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -38,6 +39,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import androidx.paging.PagingData
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,6 +49,7 @@ fun SearchScreen(
 ) {
     val searchQuery by viewModel.searchQuery.collectAsState()
     val error by viewModel.error.collectAsState()
+    val saveStatus by viewModel.saveStatus.collectAsState()
     val focusManager = LocalFocusManager.current
 
     // 검색어 입력 후 0.8초 후 자동 검색
@@ -63,84 +67,163 @@ fun SearchScreen(
             }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        // 기존 SearchBar
-        SearchTextArea(
-            searchQuery,
-            viewModel,
-            focusManager
-        )
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            // 기존 SearchBar
+            SearchTextArea(
+                searchQuery,
+                viewModel,
+                focusManager
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        if (searchQuery.isNotBlank()) {
-            val pagingFlow = remember(searchQuery) {
-                viewModel.getSearchResultFlow(searchQuery)
-            }
-            val lazyPagingItems = pagingFlow.collectAsLazyPagingItems()
-            val isRefreshing = lazyPagingItems.loadState.refresh is androidx.paging.LoadState.Loading
+            if (searchQuery.isNotBlank()) {
+                val pagingFlow = remember(searchQuery) {
+                    viewModel.getSearchResultFlow(searchQuery)
+                }
+                val lazyPagingItems = pagingFlow.collectAsLazyPagingItems()
+                val isRefreshing = lazyPagingItems.loadState.refresh is androidx.paging.LoadState.Loading
 
-            Box(modifier = Modifier.fillMaxSize()) {
-                LazyVerticalStaggeredGrid(
-                    columns = StaggeredGridCells.Fixed(2),
-                    modifier = Modifier.fillMaxSize(),
-                    verticalItemSpacing = 8.dp,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(0.dp)
-                ) {
-                    items(
-                        count = lazyPagingItems.itemCount,
-                        key = lazyPagingItems.itemKey { it.hashCode() }
-                    ) { index ->
-                        lazyPagingItems[index]?.let { mediaItem ->
-                            MediaCard(
-                                media = mediaItem,
-                                modifier = Modifier.fillMaxWidth()
-                            )
+                Box(modifier = Modifier.fillMaxSize()) {
+                    LazyVerticalStaggeredGrid(
+                        columns = StaggeredGridCells.Fixed(2),
+                        modifier = Modifier.fillMaxSize(),
+                        verticalItemSpacing = 8.dp,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        items(
+                            count = lazyPagingItems.itemCount,
+                            key = lazyPagingItems.itemKey { it.hashCode() }
+                        ) { index ->
+                            lazyPagingItems[index]?.let { mediaItem ->
+                                MediaCard(
+                                    media = mediaItem,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    onItemClick = {
+                                        viewModel.saveMedia(mediaItem)
+                                    }
+                                )
+                            }
                         }
-                    }
-                    // Paging의 추가 로딩(append) 상태일 때도 중앙에 인디케이터
-                    if (lazyPagingItems.loadState.append is androidx.paging.LoadState.Loading) {
-                        item(span = StaggeredGridItemSpan.FullLine) {
-                            Box(
-                                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator()
+                        // Paging의 추가 로딩(append) 상태일 때도 중앙에 인디케이터
+                        if (lazyPagingItems.loadState.append is androidx.paging.LoadState.Loading) {
+                            item(span = StaggeredGridItemSpan.FullLine) {
+                                Box(
+                                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator()
+                                }
                             }
                         }
                     }
-                }
-                // refresh(최초/새로고침) 로딩 시 중앙에 인디케이터 오버레이
-                if (isRefreshing) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
+                    // refresh(최초/새로고침) 로딩 시 중앙에 인디케이터 오버레이
+                    if (isRefreshing) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
                     }
                 }
             }
-        }
 
-        // 에러 상태
-        error?.let { errorMessage ->
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer
-                )
-            ) {
-                Text(
-                    text = errorMessage,
-                    modifier = Modifier.padding(16.dp),
-                    color = MaterialTheme.colorScheme.onErrorContainer
-                )
+            // 에러 상태
+            error?.let { errorMessage ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Text(
+                        text = errorMessage,
+                        modifier = Modifier.padding(16.dp),
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
             }
+        }
+        
+        // 저장 상태 표시
+        val currentSaveStatus = saveStatus
+        when (currentSaveStatus) {
+            is SearchViewModel.SaveStatus.Saving -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Card(
+                        modifier = Modifier.padding(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text("저장 중...")
+                        }
+                    }
+                }
+            }
+            is SearchViewModel.SaveStatus.Success -> {
+                LaunchedEffect(currentSaveStatus) {
+                    kotlinx.coroutines.delay(2000)
+                }
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    Card(
+                        modifier = Modifier.padding(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                        )
+                    ) {
+                        Text(
+                            text = currentSaveStatus.message,
+                            modifier = Modifier.padding(16.dp),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                }
+            }
+            is SearchViewModel.SaveStatus.Error -> {
+                LaunchedEffect(currentSaveStatus) {
+                    kotlinx.coroutines.delay(3000)
+                }
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.TopCenter
+                ) {
+                    Card(
+                        modifier = Modifier.padding(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    ) {
+                        Text(
+                            text = currentSaveStatus.message,
+                            modifier = Modifier.padding(16.dp),
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
+                }
+            }
+            else -> { /* Idle 상태 - 아무것도 표시하지 않음 */ }
         }
     }
 }
@@ -195,10 +278,11 @@ private fun SearchTextArea(
 @Composable
 private fun MediaCard(
     media: MediaUiModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onItemClick: () -> Unit = {}
 ) {
     Card(
-        modifier = modifier,
+        modifier = modifier.clickable { onItemClick() },
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {

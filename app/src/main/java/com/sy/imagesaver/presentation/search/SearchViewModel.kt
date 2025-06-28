@@ -4,18 +4,23 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.sy.imagesaver.data.mapper.MediaUiModelMapper
 import com.sy.imagesaver.domain.usecase.SearchMediaUseCase
+import com.sy.imagesaver.domain.usecase.SaveMediaUseCase
 import com.sy.imagesaver.presentation.model.MediaUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val searchMediaUseCase: SearchMediaUseCase
+    private val searchMediaUseCase: SearchMediaUseCase,
+    private val saveMediaUseCase: SaveMediaUseCase,
+    private val mediaUiModelMapper: MediaUiModelMapper
 ) : ViewModel() {
     
     private val _searchQuery = MutableStateFlow("")
@@ -23,6 +28,9 @@ class SearchViewModel @Inject constructor(
     
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
+    
+    private val _saveStatus = MutableStateFlow<SaveStatus>(SaveStatus.Idle)
+    val saveStatus: StateFlow<SaveStatus> = _saveStatus.asStateFlow()
     
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
@@ -51,5 +59,37 @@ class SearchViewModel @Inject constructor(
         if (query.isNotBlank()) {
             searchMedia(query)
         }
+    }
+    
+    fun saveMedia(mediaUiModel: MediaUiModel) {
+        viewModelScope.launch {
+            try {
+                _saveStatus.value = SaveStatus.Saving
+                
+                // MediaUiModel을 Media로 변환
+                val media = mediaUiModelMapper.toMedia(mediaUiModel)
+                
+                val id = saveMediaUseCase(media)
+                _saveStatus.value = SaveStatus.Success("미디어가 저장되었습니다. (ID: $id)")
+                
+                // 3초 후 상태 초기화
+                kotlinx.coroutines.delay(3000)
+                _saveStatus.value = SaveStatus.Idle
+                
+            } catch (e: Exception) {
+                _saveStatus.value = SaveStatus.Error("저장에 실패했습니다: ${e.message}")
+                
+                // 3초 후 상태 초기화
+                kotlinx.coroutines.delay(3000)
+                _saveStatus.value = SaveStatus.Idle
+            }
+        }
+    }
+    
+    sealed class SaveStatus {
+        object Idle : SaveStatus()
+        object Saving : SaveStatus()
+        data class Success(val message: String) : SaveStatus()
+        data class Error(val message: String) : SaveStatus()
     }
 }
