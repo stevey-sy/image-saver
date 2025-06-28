@@ -11,6 +11,6 @@ class SearchMediaUseCase @Inject constructor(
 ) {
     
     fun searchMediaPaged(query: String): Flow<PagingData<MediaUiModel>> {
-        return mediaRepository.searchMediaPaged(query)
+        return mediaRepository.searchMediaPagedWithCache(query)
     }
 } 

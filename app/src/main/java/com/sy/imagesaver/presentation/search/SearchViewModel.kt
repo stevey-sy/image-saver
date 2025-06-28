@@ -83,6 +83,20 @@ class SearchViewModel @Inject constructor(
         }
     }
     
+    fun clearSearchCache() {
+        viewModelScope.launch {
+            mediaRepository.clearSearchCache()
+        }
+    }
+    
+    fun getCacheInfo() {
+        viewModelScope.launch {
+            val cacheInfo = mediaRepository.getCacheInfo()
+            // 디버그용 로그 출력
+            println("Cache Info: $cacheInfo")
+        }
+    }
+    
     fun saveMedia(mediaUiModel: MediaUiModel) {
         viewModelScope.launch {
             try {

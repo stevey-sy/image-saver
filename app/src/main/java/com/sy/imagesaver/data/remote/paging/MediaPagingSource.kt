@@ -2,6 +2,7 @@ package com.sy.imagesaver.data.remote.paging
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import com.sy.imagesaver.data.cache.SearchCacheManager
 import com.sy.imagesaver.data.local.datasource.MediaLocalDataSource
 import com.sy.imagesaver.data.mapper.MediaDtoMapper
 import com.sy.imagesaver.data.remote.datasource.ImageRemoteDataSource
@@ -17,6 +18,7 @@ class MediaPagingSource @Inject constructor(
     private val imageRemoteDataSource: ImageRemoteDataSource,
     private val videoRemoteDataSource: VideoRemoteDataSource,
     private val mediaLocalDataSource: MediaLocalDataSource,
+    private val searchCacheManager: SearchCacheManager,
     private val mediaDtoMapper: MediaDtoMapper,
     private val query: String
 ) : PagingSource<Int, MediaUiModel>() {
@@ -33,6 +35,18 @@ class MediaPagingSource @Inject constructor(
         return try {
             val page = params.key ?: 1
             val pageSize = params.loadSize
+
+            // 첫 페이지이고 캐시가 유효한 경우 캐시된 데이터 사용
+            if (page == 1 && searchCacheManager.isCacheValid(query)) {
+                val cachedMediaList = searchCacheManager.getCachedMediaList(query)
+                if (cachedMediaList != null) {
+                    return LoadResult.Page(
+                        data = cachedMediaList,
+                        prevKey = null,
+                        nextKey = null // 캐시된 데이터는 한 페이지로 간주
+                    )
+                }
+            }
 
             // 북마크된 미디어의 thumbnailUrl 목록 조회
             val bookmarkedThumbnailUrls = mediaLocalDataSource.getBookmarkedThumbnailUrls()
@@ -58,6 +72,11 @@ class MediaPagingSource @Inject constructor(
             val mediaUiModels = sortedMediaList.map { media ->
                 val isBookmarked = bookmarkedThumbnailUrls.contains(media.thumbnailUrl)
                 MediaUiModel.fromMedia(media, isBookmarked)
+            }
+            
+            // 첫 페이지인 경우 캐시에 저장
+            if (page == 1) {
+                searchCacheManager.cacheMediaList(query, mediaUiModels)
             }
             
             // 메타데이터는 이미지 기준으로 사용
