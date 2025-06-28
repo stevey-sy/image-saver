@@ -1,5 +1,6 @@
 package com.sy.imagesaver.presentation.search
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -44,11 +45,9 @@ fun SearchScreen(
     viewModel: SearchViewModel = hiltViewModel()
 ) {
     val searchQuery by viewModel.searchQuery.collectAsState()
-    val searchResult by viewModel.searchResult.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     val focusManager = LocalFocusManager.current
-    
+
     // 검색어 입력 후 0.8초 후 자동 검색
     var isFirstLaunch by remember { mutableStateOf(true) }
 
@@ -78,13 +77,53 @@ fun SearchScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 로딩 상태
-        if (isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
+        if (searchQuery.isNotBlank()) {
+            val pagingFlow = remember(searchQuery) {
+                viewModel.getSearchResultFlow(searchQuery)
+            }
+            val lazyPagingItems = pagingFlow.collectAsLazyPagingItems()
+            val isRefreshing = lazyPagingItems.loadState.refresh is androidx.paging.LoadState.Loading
+
+            Box(modifier = Modifier.fillMaxSize()) {
+                LazyVerticalStaggeredGrid(
+                    columns = StaggeredGridCells.Fixed(2),
+                    modifier = Modifier.fillMaxSize(),
+                    verticalItemSpacing = 8.dp,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(0.dp)
+                ) {
+                    items(
+                        count = lazyPagingItems.itemCount,
+                        key = lazyPagingItems.itemKey { it.hashCode() }
+                    ) { index ->
+                        lazyPagingItems[index]?.let { mediaItem ->
+                            MediaCard(
+                                media = mediaItem,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    }
+                    // Paging의 추가 로딩(append) 상태일 때도 중앙에 인디케이터
+                    if (lazyPagingItems.loadState.append is androidx.paging.LoadState.Loading) {
+                        item(span = StaggeredGridItemSpan.FullLine) {
+                            Box(
+                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        }
+                    }
+                }
+                // refresh(최초/새로고침) 로딩 시 중앙에 인디케이터 오버레이
+                if (isRefreshing) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
             }
         }
 
@@ -101,58 +140,6 @@ fun SearchScreen(
                     modifier = Modifier.padding(16.dp),
                     color = MaterialTheme.colorScheme.onErrorContainer
                 )
-            }
-        }
-
-        // Masonry 스타일 2열 StaggeredGrid (PagingData 사용)
-        if (searchQuery.isNotBlank()) {
-            val searchResultFlow = kotlinx.coroutines.flow.flowOf(searchResult)
-            val lazyPagingItems = searchResultFlow.collectAsLazyPagingItems()
-            
-            LazyVerticalStaggeredGrid(
-                columns = StaggeredGridCells.Fixed(2),
-                modifier = Modifier.fillMaxSize(),
-                verticalItemSpacing = 8.dp,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(0.dp)
-            ) {
-                items(
-                    count = lazyPagingItems.itemCount,
-                    key = lazyPagingItems.itemKey { it.hashCode() }
-                ) { index ->
-                    lazyPagingItems[index]?.let { mediaItem ->
-                        MediaCard(
-                            media = mediaItem,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                }
-                
-//                // 로딩 상태 표시
-//                lazyPagingItems.apply {
-//                    when {
-//                        loadState.refresh is androidx.paging.LoadState.Loading -> {
-//                            item(span = { StaggeredGridItemSpan.FullLine }) {
-//                                Box(
-//                                    modifier = Modifier.fillMaxWidth(),
-//                                    contentAlignment = Alignment.Center
-//                                ) {
-//                                    CircularProgressIndicator()
-//                                }
-//                            }
-//                        }
-//                        loadState.append is androidx.paging.LoadState.Loading -> {
-//                            item(span = { StaggeredGridItemSpan.FullLine }) {
-//                                Box(
-//                                    modifier = Modifier.fillMaxWidth(),
-//                                    contentAlignment = Alignment.Center
-//                                ) {
-//                                    CircularProgressIndicator()
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
             }
         }
     }

@@ -10,7 +10,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 @HiltViewModel
@@ -21,15 +21,8 @@ class SearchViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
     
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-    
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
-    
-    // 검색 결과를 StateFlow로 관리
-    private val _searchResult = MutableStateFlow<PagingData<MediaUiModel>>(PagingData.empty())
-    val searchResult: StateFlow<PagingData<MediaUiModel>> = _searchResult.asStateFlow()
     
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
@@ -38,31 +31,18 @@ class SearchViewModel @Inject constructor(
     fun clearSearchQuery() {
         _searchQuery.value = ""
         _error.value = null
-        _searchResult.value = PagingData.empty()
     }
     
     fun searchMedia(query: String) {
-        if (query.isBlank()) {
-            _searchResult.value = PagingData.empty()
-            return
-        }
-        
-        _isLoading.value = true
+        // PagingData는 Composable에서 Flow로 직접 구독하므로 별도 구현 필요 없음
         _error.value = null
-        
-        viewModelScope.launch {
-            try {
-                // 새로운 검색어로 PagingData 생성
-                searchMediaUseCase.searchMediaPaged(query)
-                    .cachedIn(viewModelScope)
-                    .collect { pagingData ->
-                        _searchResult.value = pagingData
-                        _isLoading.value = false
-                    }
-            } catch (e: Exception) {
-                _error.value = e.message ?: "검색 중 오류가 발생했습니다."
-                _isLoading.value = false
-            }
+    }
+    
+    fun getSearchResultFlow(query: String): Flow<PagingData<MediaUiModel>> {
+        return if (query.isNotBlank()) {
+            searchMediaUseCase.searchMediaPaged(query).cachedIn(viewModelScope)
+        } else {
+            kotlinx.coroutines.flow.flowOf(PagingData.empty())
         }
     }
     
