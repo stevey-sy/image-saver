@@ -20,6 +20,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.sy.imagesaver.presentation.model.MediaUiModel
 import com.sy.imagesaver.presentation.theme.AppIcons
+import com.sy.imagesaver.presentation.common.MediaCard
 
 @Composable
 fun BookMarkScreen(
@@ -125,90 +126,11 @@ fun BookMarkScreen(
                 contentPadding = PaddingValues(0.dp)
             ) {
                 items(bookmarkedMedia) { mediaItem ->
-                    BookmarkedMediaCard(
+                    MediaCard(
                         media = mediaItem,
+                        showBookmarkIcon = false,
                         modifier = Modifier.fillMaxWidth()
                     )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun BookmarkedMediaCard(
-    media: MediaUiModel,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column {
-            // 미디어 컨텐츠
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(media.thumbnailUrl)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = "미디어 썸네일",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(12.dp)),
-                    contentScale = ContentScale.Crop
-                )
-            }
-
-            // 미디어 정보
-            Column(
-                modifier = Modifier.padding(12.dp)
-            ) {
-                when (media) {
-                    is MediaUiModel.Image -> {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = AppIcons.ImageType,
-                                contentDescription = "이미지",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = media.datetime,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                    is MediaUiModel.Video -> {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = AppIcons.VideoType,
-                                contentDescription = "비디오",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = media.datetime,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
                 }
             }
         }

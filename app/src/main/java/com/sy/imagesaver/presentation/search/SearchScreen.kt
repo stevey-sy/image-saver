@@ -5,20 +5,17 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -38,10 +35,12 @@ import com.sy.imagesaver.presentation.theme.AppIcons
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOf
-import androidx.paging.PagingData
+import com.sy.imagesaver.presentation.manager.SnackBarManager
+import com.sy.imagesaver.presentation.manager.rememberSnackBarManager
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import kotlinx.coroutines.delay
+import com.sy.imagesaver.presentation.common.MediaCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,9 +49,29 @@ fun SearchScreen(
 ) {
     val searchQuery by viewModel.searchQuery.collectAsState()
     val error by viewModel.error.collectAsState()
-    val saveStatus by viewModel.saveStatus.collectAsState()
     val bookmarkedThumbnailUrls by viewModel.bookmarkedThumbnailUrls.collectAsState()
     val focusManager = LocalFocusManager.current
+    val snackBarManager = rememberSnackBarManager()
+
+    // SnackBar 이벤트 구독
+    LaunchedEffect(Unit) {
+        viewModel.snackBarEvent.collect { event ->
+            when (event) {
+                is SearchViewModel.SnackBarEvent.Success -> {
+                    snackBarManager.showSnackbar(
+                        message = event.message,
+                        duration = SnackBarManager.SnackbarDuration.Short
+                    )
+                }
+                is SearchViewModel.SnackBarEvent.Error -> {
+                    snackBarManager.showSnackbar(
+                        message = event.message,
+                        duration = SnackBarManager.SnackbarDuration.Long
+                    )
+                }
+            }
+        }
+    }
 
     // 검색어 입력 후 0.8초 후 자동 검색
     var isFirstLaunch by remember { mutableStateOf(true) }
@@ -114,6 +133,7 @@ fun SearchScreen(
                                 MediaCard(
                                     media = mediaItem,
                                     isBookmarked = bookmarkedThumbnailUrls.contains(mediaItem.thumbnailUrl),
+                                    showBookmarkIcon = true,
                                     modifier = Modifier.fillMaxWidth(),
                                     onItemClick = {
                                         viewModel.saveMedia(mediaItem)
@@ -163,80 +183,6 @@ fun SearchScreen(
                 }
             }
         }
-        
-        // 저장 상태 표시
-        val currentSaveStatus = saveStatus
-        when (currentSaveStatus) {
-            is SearchViewModel.SaveStatus.Saving -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Card(
-                        modifier = Modifier.padding(16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surface
-                        )
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text("저장 중...")
-                        }
-                    }
-                }
-            }
-            is SearchViewModel.SaveStatus.Success -> {
-                LaunchedEffect(currentSaveStatus) {
-                    kotlinx.coroutines.delay(2000)
-                }
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.TopCenter
-                ) {
-                    Card(
-                        modifier = Modifier.padding(16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer
-                        )
-                    ) {
-                        Text(
-                            text = currentSaveStatus.message,
-                            modifier = Modifier.padding(16.dp),
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                }
-            }
-            is SearchViewModel.SaveStatus.Error -> {
-                LaunchedEffect(currentSaveStatus) {
-                    kotlinx.coroutines.delay(3000)
-                }
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.TopCenter
-                ) {
-                    Card(
-                        modifier = Modifier.padding(16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer
-                        )
-                    ) {
-                        Text(
-                            text = currentSaveStatus.message,
-                            modifier = Modifier.padding(16.dp),
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                    }
-                }
-            }
-            else -> { /* Idle 상태 - 아무것도 표시하지 않음 */ }
-        }
     }
 }
 
@@ -285,113 +231,6 @@ private fun SearchTextArea(
             disabledIndicatorColor = Color.Transparent
         )
     )
-}
-
-@Composable
-private fun MediaCard(
-    media: MediaUiModel,
-    isBookmarked: Boolean,
-    modifier: Modifier = Modifier,
-    onItemClick: () -> Unit = {}
-) {
-    Card(
-        modifier = modifier
-            .height(200.dp)
-            .clickable { onItemClick() },
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(media.thumbnailUrl)
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = "미디어 썸네일",
-                    modifier = Modifier
-                        .fillMaxSize(),
-//                        .clip(RoundedCornerShape(12.dp)),
-                    contentScale = ContentScale.Crop
-                )
-                
-                if (isBookmarked) {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(8.dp)
-                            .size(24.dp)
-                            .background(
-                                color = MaterialTheme.colorScheme.primary,
-                                shape = RoundedCornerShape(12.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = AppIcons.CheckCircle,
-                            contentDescription = "북마크됨",
-                            tint = Color.Green,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.Black)
-                    .padding(12.dp)
-            ) {
-                when (media) {
-                    is MediaUiModel.Image -> {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = AppIcons.ImageType,
-                                contentDescription = "이미지",
-                                tint = Color.White,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = media.datetime,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color.White,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                    is MediaUiModel.Video -> {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = AppIcons.VideoType,
-                                contentDescription = "비디오",
-                                tint = Color.White,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = media.datetime,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color.White,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 
 
