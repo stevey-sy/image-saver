@@ -11,7 +11,7 @@ class MediaDtoMapper @Inject constructor() {
     @OptIn(ExperimentalTime::class)
     fun fromImageDto(dto: ImageDto): Media =
         Media.Image(
-            id = dto.docUrl,
+            id = dto.thumbnailUrl,
             thumbnailUrl = dto.thumbnailUrl,
             originalUrl = dto.imageUrl,
             datetime = Instant.parse(dto.datetime)
@@ -21,7 +21,7 @@ class MediaDtoMapper @Inject constructor() {
     @OptIn(ExperimentalTime::class)
     fun fromVideoDto(dto: VideoDto): Media =
         Media.Video(
-            id = dto.url,
+            id = dto.thumbnail,
             thumbnailUrl = dto.thumbnail,
             originalUrl = dto.url,
             datetime = Instant.parse(dto.datetime),

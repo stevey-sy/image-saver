@@ -8,6 +8,7 @@ import com.sy.imagesaver.data.mapper.MediaUiModelMapper
 import com.sy.imagesaver.domain.usecase.SearchMediaUseCase
 import com.sy.imagesaver.domain.usecase.SaveMediaUseCase
 import com.sy.imagesaver.presentation.model.MediaUiModel
+import com.sy.imagesaver.data.repository.MediaRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,6 +21,7 @@ import javax.inject.Inject
 class SearchViewModel @Inject constructor(
     private val searchMediaUseCase: SearchMediaUseCase,
     private val saveMediaUseCase: SaveMediaUseCase,
+    private val mediaRepository: MediaRepository,
     private val mediaUiModelMapper: MediaUiModelMapper
 ) : ViewModel() {
     
@@ -31,6 +33,26 @@ class SearchViewModel @Inject constructor(
     
     private val _saveStatus = MutableStateFlow<SaveStatus>(SaveStatus.Idle)
     val saveStatus: StateFlow<SaveStatus> = _saveStatus.asStateFlow()
+    
+    // 북마크된 아이템의 thumbnailUrl을 추적
+    private val _bookmarkedThumbnailUrls = MutableStateFlow<Set<String>>(emptySet())
+    val bookmarkedThumbnailUrls: StateFlow<Set<String>> = _bookmarkedThumbnailUrls.asStateFlow()
+    
+    init {
+        // 앱 시작 시 기존 북마크된 아이템들 로드
+        loadBookmarkedItems()
+    }
+    
+    private fun loadBookmarkedItems() {
+        viewModelScope.launch {
+            try {
+                val bookmarkedUrls = mediaRepository.getBookmarkedThumbnailUrls()
+                _bookmarkedThumbnailUrls.value = bookmarkedUrls.toSet()
+            } catch (e: Exception) {
+                // 에러 처리 (선택사항)
+            }
+        }
+    }
     
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
@@ -71,6 +93,9 @@ class SearchViewModel @Inject constructor(
                 
                 val id = saveMediaUseCase(media)
                 _saveStatus.value = SaveStatus.Success("미디어가 저장되었습니다. (ID: $id)")
+                
+                // 저장 성공 시 해당 아이템을 북마크 목록에 추가
+                _bookmarkedThumbnailUrls.value = _bookmarkedThumbnailUrls.value + mediaUiModel.thumbnailUrl
                 
                 // 3초 후 상태 초기화
                 kotlinx.coroutines.delay(3000)

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -51,6 +52,7 @@ fun SearchScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
     val error by viewModel.error.collectAsState()
     val saveStatus by viewModel.saveStatus.collectAsState()
+    val bookmarkedThumbnailUrls by viewModel.bookmarkedThumbnailUrls.collectAsState()
     val focusManager = LocalFocusManager.current
 
     // 검색어 입력 후 0.8초 후 자동 검색
@@ -89,6 +91,12 @@ fun SearchScreen(
                 }
                 val lazyPagingItems = pagingFlow.collectAsLazyPagingItems()
                 val isRefreshing = lazyPagingItems.loadState.refresh is androidx.paging.LoadState.Loading
+                val gridState = rememberLazyStaggeredGridState()
+
+                // 검색어가 변경될 때 스크롤 위치 초기화
+                LaunchedEffect(searchQuery) {
+                    gridState.animateScrollToItem(0)
+                }
 
                 Box(modifier = Modifier.fillMaxSize()) {
                     LazyVerticalStaggeredGrid(
@@ -96,15 +104,17 @@ fun SearchScreen(
                         modifier = Modifier.fillMaxSize(),
                         verticalItemSpacing = 8.dp,
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        contentPadding = PaddingValues(0.dp)
+                        contentPadding = PaddingValues(0.dp),
+                        state = gridState
                     ) {
                         items(
                             count = lazyPagingItems.itemCount,
-                            key = lazyPagingItems.itemKey { it.hashCode() }
+                            key = lazyPagingItems.itemKey { it.id }
                         ) { index ->
                             lazyPagingItems[index]?.let { mediaItem ->
                                 MediaCard(
                                     media = mediaItem,
+                                    isBookmarked = bookmarkedThumbnailUrls.contains(mediaItem.thumbnailUrl),
                                     modifier = Modifier.fillMaxWidth(),
                                     onItemClick = {
                                         viewModel.saveMedia(mediaItem)
@@ -279,6 +289,7 @@ private fun SearchTextArea(
 @Composable
 private fun MediaCard(
     media: MediaUiModel,
+    isBookmarked: Boolean,
     modifier: Modifier = Modifier,
     onItemClick: () -> Unit = {}
 ) {
@@ -307,7 +318,7 @@ private fun MediaCard(
                 )
                 
                 // 북마크된 경우 우측 상단에 체크 아이콘 표시
-                if (media.isBookmarked) {
+                if (isBookmarked) {
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
