@@ -10,8 +10,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -65,16 +63,6 @@ class SearchViewModel @Inject constructor(
                 _error.value = e.message ?: "검색 중 오류가 발생했습니다."
                 _isLoading.value = false
             }
-        }
-    }
-    
-    // PagingData를 Flow로 반환하는 함수
-    fun getSearchResultFlow(): Flow<PagingData<MediaUiModel>> {
-        return if (_searchQuery.value.isNotBlank()) {
-            searchMediaUseCase.searchMediaPaged(_searchQuery.value)
-                .cachedIn(viewModelScope)
-        } else {
-            kotlinx.coroutines.flow.flowOf(PagingData.empty())
         }
     }
     
