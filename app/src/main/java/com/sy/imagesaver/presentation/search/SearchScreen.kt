@@ -1,9 +1,9 @@
 package com.sy.imagesaver.presentation.search
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import androidx.paging.PagingData
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -103,17 +104,17 @@ fun SearchScreen(
             }
         }
 
-        // 검색 결과 - Pinterest 스타일 2열 그리드 (PagingData 사용)
+        // Masonry 스타일 2열 StaggeredGrid (PagingData 사용)
         if (searchQuery.isNotBlank()) {
-            // PagingData를 Flow로 변환
             val searchResultFlow = kotlinx.coroutines.flow.flowOf(searchResult)
             val lazyPagingItems = searchResultFlow.collectAsLazyPagingItems()
             
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
+            LazyVerticalStaggeredGrid(
+                columns = StaggeredGridCells.Fixed(2),
+                modifier = Modifier.fillMaxSize(),
+                verticalItemSpacing = 8.dp,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxSize()
+                contentPadding = PaddingValues(0.dp)
             ) {
                 items(
                     count = lazyPagingItems.itemCount,
@@ -127,31 +128,31 @@ fun SearchScreen(
                     }
                 }
                 
-                // 로딩 상태 표시
-                lazyPagingItems.apply {
-                    when {
-                        loadState.refresh is androidx.paging.LoadState.Loading -> {
-                            item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(2) }) {
-                                Box(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator()
-                                }
-                            }
-                        }
-                        loadState.append is androidx.paging.LoadState.Loading -> {
-                            item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(2) }) {
-                                Box(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator()
-                                }
-                            }
-                        }
-                    }
-                }
+//                // 로딩 상태 표시
+//                lazyPagingItems.apply {
+//                    when {
+//                        loadState.refresh is androidx.paging.LoadState.Loading -> {
+//                            item(span = { StaggeredGridItemSpan.FullLine }) {
+//                                Box(
+//                                    modifier = Modifier.fillMaxWidth(),
+//                                    contentAlignment = Alignment.Center
+//                                ) {
+//                                    CircularProgressIndicator()
+//                                }
+//                            }
+//                        }
+//                        loadState.append is androidx.paging.LoadState.Loading -> {
+//                            item(span = { StaggeredGridItemSpan.FullLine }) {
+//                                Box(
+//                                    modifier = Modifier.fillMaxWidth(),
+//                                    contentAlignment = Alignment.Center
+//                                ) {
+//                                    CircularProgressIndicator()
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
             }
         }
     }
@@ -219,7 +220,6 @@ private fun MediaCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(1f)
             ) {
                 // 모든 미디어를 thumbnailUrl로 이미지로 표시
                 AsyncImage(
@@ -233,30 +233,6 @@ private fun MediaCard(
                         .clip(RoundedCornerShape(12.dp)),
                     contentScale = ContentScale.Crop
                 )
-
-                // 비디오인 경우 재생 버튼 오버레이
-                if (media is MediaUiModel.Video) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
-                            ),
-                            shape = RoundedCornerShape(50)
-                        ) {
-                            Icon(
-                                imageVector = AppIcons.VideoType,
-                                contentDescription = "비디오",
-                                modifier = Modifier
-                                    .size(32.dp)
-                                    .padding(8.dp),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                }
             }
 
             // 미디어 정보
@@ -276,9 +252,11 @@ private fun MediaCard(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "이미지",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.primary
+                                text = media.datetime,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
                     }
@@ -294,23 +272,15 @@ private fun MediaCard(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "비디오 • ${media.playTime}초",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.primary
+                                text = media.datetime,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
                     }
                 }
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = media.datetime,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
             }
         }
     }
