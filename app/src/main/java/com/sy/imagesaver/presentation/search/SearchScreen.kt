@@ -102,6 +102,8 @@ fun SearchScreen(
                         columns = GridCells.Fixed(2),
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(0.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
                         state = gridState
                     ) {
                         items(
@@ -312,8 +314,8 @@ private fun MediaCard(
                         .build(),
                     contentDescription = "미디어 썸네일",
                     modifier = Modifier
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(12.dp)),
+                        .fillMaxSize(),
+//                        .clip(RoundedCornerShape(12.dp)),
                     contentScale = ContentScale.Crop
                 )
                 
@@ -342,7 +344,7 @@ private fun MediaCard(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(60.dp)
+                    .background(Color.Black)
                     .padding(12.dp)
             ) {
                 when (media) {
@@ -353,14 +355,14 @@ private fun MediaCard(
                             Icon(
                                 imageVector = AppIcons.ImageType,
                                 contentDescription = "이미지",
-                                tint = MaterialTheme.colorScheme.primary,
+                                tint = Color.White,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = media.datetime,
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = Color.White,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
@@ -373,14 +375,14 @@ private fun MediaCard(
                             Icon(
                                 imageVector = AppIcons.VideoType,
                                 contentDescription = "비디오",
-                                tint = MaterialTheme.colorScheme.primary,
+                                tint = Color.White,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = media.datetime,
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = Color.White,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
