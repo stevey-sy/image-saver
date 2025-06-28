@@ -5,7 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.sy.imagesaver.presentation.bookmark.BookmarkScreen
+import com.sy.imagesaver.presentation.bookmark.BookMarkScreen
 import com.sy.imagesaver.presentation.search.SearchScreen
 
 sealed class Screen(val route: String) {
@@ -24,7 +24,7 @@ fun NavGraph(
         modifier = modifier
     ) {
         composable(Screen.Bookmark.route) {
-            BookmarkScreen()
+            BookMarkScreen()
         }
         composable(Screen.Search.route) {
             SearchScreen()
