@@ -27,23 +27,18 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.sy.imagesaver.presentation.navigation.NavGraph
 import com.sy.imagesaver.presentation.navigation.Screen
-import com.sy.imagesaver.presentation.search.VideoPlayerManager
 import com.sy.imagesaver.presentation.theme.ImageSaverTheme
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    
-    @Inject
-    lateinit var videoPlayerManager: VideoPlayerManager
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             ImageSaverTheme {
-                MainScreen(videoPlayerManager)
+                MainScreen()
             }
         }
     }
@@ -51,7 +46,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(videoPlayerManager: VideoPlayerManager) {
+fun MainScreen() {
     val navController = rememberNavController()
     
     Scaffold(
@@ -92,7 +87,6 @@ fun MainScreen(videoPlayerManager: VideoPlayerManager) {
     ) { innerPadding ->
         NavGraph(
             navController = navController,
-            videoPlayerManager = videoPlayerManager,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -102,6 +96,6 @@ fun MainScreen(videoPlayerManager: VideoPlayerManager) {
 @Composable
 fun MainScreenPreview() {
     ImageSaverTheme {
-        MainScreen(VideoPlayerManager(androidx.compose.ui.platform.LocalContext.current))
+        MainScreen()
     }
 }
