@@ -3,6 +3,8 @@ package com.sy.imagesaver.presentation.theme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.painter.Painter
 import com.sy.imagesaver.R
 
 object AppIcons {
@@ -13,5 +15,13 @@ object AppIcons {
     val VideoType: ImageVector
         @Composable
         get() = ImageVector.vectorResource(id = R.drawable.ic_type_video)
+
+    val Bookmark: ImageVector
+        @Composable
+        get() = ImageVector.vectorResource(id = R.drawable.ic_bookmark)
+        
+    val CheckCircle: Painter
+        @Composable
+        get() = painterResource(id = R.drawable.ic_check_circle)
 }
 
