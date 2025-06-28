@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "com.sy.imagesaver"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -86,6 +86,13 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.video)
     implementation(libs.coil.network.okhttp)
+
+    // datetime
+    implementation(libs.kotlinx.datetime)
+
+    // paging
+    implementation(libs.androidx.paging.runtime)
+    implementation(libs.androidx.paging.compose)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
