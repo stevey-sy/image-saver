@@ -24,4 +24,6 @@ interface MediaLocalDataSource {
     suspend fun deleteAllMedia()
     
     suspend fun getMediaCount(): Int
+    
+    suspend fun getBookmarkedThumbnailUrls(): List<String>
 }

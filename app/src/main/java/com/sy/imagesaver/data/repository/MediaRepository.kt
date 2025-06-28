@@ -6,4 +6,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface MediaRepository {
     fun searchMediaPaged(query: String): Flow<PagingData<MediaUiModel>>
+    suspend fun getBookmarkedThumbnailUrls(): List<String>
 }

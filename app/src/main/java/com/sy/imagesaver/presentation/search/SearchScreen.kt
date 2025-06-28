@@ -11,6 +11,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -304,6 +305,29 @@ private fun MediaCard(
                         .clip(RoundedCornerShape(12.dp)),
                     contentScale = ContentScale.Crop
                 )
+                
+                // 북마크된 경우 우측 상단에 체크 아이콘 표시
+                if (media.isBookmarked) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(8.dp)
+                            .size(24.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.primary,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                        ,
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = AppIcons.CheckCircle,
+                            contentDescription = "북마크됨",
+                            tint = Color.Green,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
             }
 
             // 미디어 정보

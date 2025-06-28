@@ -48,4 +48,8 @@ class MediaLocalDataSourceImpl @Inject constructor(
     override suspend fun getMediaCount(): Int {
         return mediaDao.getMediaCount()
     }
+    
+    override suspend fun getBookmarkedThumbnailUrls(): List<String> {
+        return mediaDao.getBookmarkedThumbnailUrls()
+    }
 }

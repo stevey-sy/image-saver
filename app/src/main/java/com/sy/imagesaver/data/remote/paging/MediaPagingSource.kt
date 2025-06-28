@@ -2,6 +2,7 @@ package com.sy.imagesaver.data.remote.paging
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import com.sy.imagesaver.data.local.datasource.MediaLocalDataSource
 import com.sy.imagesaver.data.mapper.MediaDtoMapper
 import com.sy.imagesaver.data.remote.datasource.ImageRemoteDataSource
 import com.sy.imagesaver.data.remote.datasource.VideoRemoteDataSource
@@ -15,6 +16,7 @@ import kotlin.time.ExperimentalTime
 class MediaPagingSource @Inject constructor(
     private val imageRemoteDataSource: ImageRemoteDataSource,
     private val videoRemoteDataSource: VideoRemoteDataSource,
+    private val mediaLocalDataSource: MediaLocalDataSource,
     private val mediaDtoMapper: MediaDtoMapper,
     private val query: String
 ) : PagingSource<Int, MediaUiModel>() {
@@ -31,6 +33,9 @@ class MediaPagingSource @Inject constructor(
         return try {
             val page = params.key ?: 1
             val pageSize = params.loadSize
+
+            // 북마크된 미디어의 thumbnailUrl 목록 조회
+            val bookmarkedThumbnailUrls = mediaLocalDataSource.getBookmarkedThumbnailUrls()
 
             // 이미지와 비디오를 병렬로 검색
             val imageResponse = imageRemoteDataSource.searchImages(query, page, pageSize)
@@ -49,9 +54,10 @@ class MediaPagingSource @Inject constructor(
                 }
             }
             
-            // MediaUiModel로 변환
+            // MediaUiModel로 변환하면서 북마크 상태 확인
             val mediaUiModels = sortedMediaList.map { media ->
-                MediaUiModel.fromMedia(media)
+                val isBookmarked = bookmarkedThumbnailUrls.contains(media.thumbnailUrl)
+                MediaUiModel.fromMedia(media, isBookmarked)
             }
             
             // 메타데이터는 이미지 기준으로 사용

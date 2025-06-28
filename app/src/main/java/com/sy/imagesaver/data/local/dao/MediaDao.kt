@@ -36,5 +36,8 @@ interface MediaDao {
     
     @Query("SELECT COUNT(*) FROM media")
     suspend fun getMediaCount(): Int
+    
+    @Query("SELECT thumbnailUrl FROM media")
+    suspend fun getBookmarkedThumbnailUrls(): List<String>
 }
 

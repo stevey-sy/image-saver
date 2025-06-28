@@ -17,12 +17,14 @@ sealed class MediaUiModel {
     abstract val thumbnailUrl: String
     abstract val originalUrl: String
     abstract val datetime: String
+    abstract val isBookmarked: Boolean
 
     data class Image(
         override val id: String,
         override val thumbnailUrl: String,
         override val originalUrl: String,
-        override val datetime: String
+        override val datetime: String,
+        override val isBookmarked: Boolean = false
     ) : MediaUiModel()
 
     data class Video(
@@ -31,11 +33,12 @@ sealed class MediaUiModel {
         override val originalUrl: String,
         override val datetime: String,
         val title: String,
-        val playTime: Int
+        val playTime: Int,
+        override val isBookmarked: Boolean = false
     ) : MediaUiModel()
 
     companion object {
-        fun fromMedia(media: Media): MediaUiModel {
+        fun fromMedia(media: Media, isBookmarked: Boolean = false): MediaUiModel {
             val formattedDateTime = formatDateTime(media.datetime)
             
             return when (media) {
@@ -43,7 +46,8 @@ sealed class MediaUiModel {
                     id = media.id,
                     thumbnailUrl = media.thumbnailUrl,
                     originalUrl = media.originalUrl,
-                    datetime = formattedDateTime
+                    datetime = formattedDateTime,
+                    isBookmarked = isBookmarked
                 )
                 is Media.Video -> Video(
                     id = media.id,
@@ -51,7 +55,8 @@ sealed class MediaUiModel {
                     originalUrl = media.originalUrl,
                     datetime = formattedDateTime,
                     title = media.title,
-                    playTime = media.playTime
+                    playTime = media.playTime,
+                    isBookmarked = isBookmarked
                 )
             }
         }

@@ -3,6 +3,7 @@ package com.sy.imagesaver.data.repository
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import com.sy.imagesaver.data.local.datasource.MediaLocalDataSource
 import com.sy.imagesaver.data.mapper.MediaDtoMapper
 import com.sy.imagesaver.data.remote.datasource.ImageRemoteDataSource
 import com.sy.imagesaver.data.remote.datasource.VideoRemoteDataSource
@@ -14,6 +15,7 @@ import javax.inject.Inject
 class MediaRepositoryImpl @Inject constructor(
     private val imageRemoteDataSource: ImageRemoteDataSource,
     private val videoRemoteDataSource: VideoRemoteDataSource,
+    private val mediaLocalDataSource: MediaLocalDataSource,
     private val mediaDtoMapper: MediaDtoMapper
 ) : MediaRepository {
     
@@ -28,10 +30,15 @@ class MediaRepositoryImpl @Inject constructor(
                 MediaPagingSource(
                     imageRemoteDataSource,
                     videoRemoteDataSource,
+                    mediaLocalDataSource,
                     mediaDtoMapper,
                     query
                 )
             }
         ).flow
+    }
+    
+    override suspend fun getBookmarkedThumbnailUrls(): List<String> {
+        return mediaLocalDataSource.getBookmarkedThumbnailUrls()
     }
 }
