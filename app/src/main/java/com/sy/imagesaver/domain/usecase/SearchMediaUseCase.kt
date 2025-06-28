@@ -1,8 +1,10 @@
 package com.sy.imagesaver.domain.usecase
 
+import androidx.paging.PagingData
 import com.sy.imagesaver.data.repository.MediaRepository
 import com.sy.imagesaver.data.remote.dto.KakaoResponseDto
 import com.sy.imagesaver.domain.data.Media
+import com.sy.imagesaver.presentation.model.MediaUiModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -28,5 +30,9 @@ class SearchMediaUseCase @Inject constructor(
                 }
                 response.copy(documents = sortedDocuments)
             }
+    }
+    
+    fun searchMediaPaged(query: String): Flow<PagingData<MediaUiModel>> {
+        return mediaRepository.searchMediaPaged(query)
     }
 } 

@@ -3,7 +3,7 @@ package com.sy.imagesaver.presentation.search
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -24,14 +24,18 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemKey
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.sy.imagesaver.domain.data.Media
+import com.sy.imagesaver.presentation.model.MediaUiModel
 import com.sy.imagesaver.presentation.theme.AppIcons
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOf
+import androidx.paging.PagingData
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,13 +47,13 @@ fun SearchScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     val focusManager = LocalFocusManager.current
-
-    // 검색어 입력 후 0.5초 후 자동 검색
+    
+    // 검색어 입력 후 0.8초 후 자동 검색
     var isFirstLaunch by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
         snapshotFlow { searchQuery }
-            .debounce(500)
+            .debounce(800)
             .distinctUntilChanged()
             .collectLatest { searchText ->
                 if (searchText.isNotBlank() && !isFirstLaunch) {
@@ -99,19 +103,54 @@ fun SearchScreen(
             }
         }
 
-        // 검색 결과 - Pinterest 스타일 2열 그리드
-        searchResult?.let { result ->
+        // 검색 결과 - Pinterest 스타일 2열 그리드 (PagingData 사용)
+        if (searchQuery.isNotBlank()) {
+            // PagingData를 Flow로 변환
+            val searchResultFlow = kotlinx.coroutines.flow.flowOf(searchResult)
+            val lazyPagingItems = searchResultFlow.collectAsLazyPagingItems()
+            
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                itemsIndexed(result.documents) { index, media ->
-                    MediaCard(
-                        media = media,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                items(
+                    count = lazyPagingItems.itemCount,
+                    key = lazyPagingItems.itemKey { it.hashCode() }
+                ) { index ->
+                    lazyPagingItems[index]?.let { mediaItem ->
+                        MediaCard(
+                            media = mediaItem,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                }
+                
+                // 로딩 상태 표시
+                lazyPagingItems.apply {
+                    when {
+                        loadState.refresh is androidx.paging.LoadState.Loading -> {
+                            item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(2) }) {
+                                Box(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator()
+                                }
+                            }
+                        }
+                        loadState.append is androidx.paging.LoadState.Loading -> {
+                            item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(2) }) {
+                                Box(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator()
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -167,7 +206,7 @@ private fun SearchTextArea(
 
 @Composable
 private fun MediaCard(
-    media: Media,
+    media: MediaUiModel,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -196,7 +235,7 @@ private fun MediaCard(
                 )
 
                 // 비디오인 경우 재생 버튼 오버레이
-                if (media is Media.Video) {
+                if (media is MediaUiModel.Video) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -225,7 +264,7 @@ private fun MediaCard(
                 modifier = Modifier.padding(12.dp)
             ) {
                 when (media) {
-                    is Media.Image -> {
+                    is MediaUiModel.Image -> {
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -243,7 +282,7 @@ private fun MediaCard(
                             )
                         }
                     }
-                    is Media.Video -> {
+                    is MediaUiModel.Video -> {
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -266,7 +305,7 @@ private fun MediaCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = media.id,
+                    text = media.datetime,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,

@@ -1,11 +1,16 @@
 package com.sy.imagesaver.data.repository
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import com.sy.imagesaver.data.mapper.MediaDtoMapper
 import com.sy.imagesaver.data.remote.datasource.ImageRemoteDataSource
 import com.sy.imagesaver.data.remote.datasource.VideoRemoteDataSource
 import com.sy.imagesaver.data.remote.dto.MetaDto
 import com.sy.imagesaver.data.remote.dto.KakaoResponseDto
+import com.sy.imagesaver.data.remote.paging.MediaPagingSource
 import com.sy.imagesaver.domain.data.Media
+import com.sy.imagesaver.presentation.model.MediaUiModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
@@ -38,5 +43,23 @@ class MediaRepositoryImpl @Inject constructor(
         )
         
         emit(KakaoResponseDto(combinedMeta, combinedMediaList))
+    }
+    
+    override fun searchMediaPaged(query: String): Flow<PagingData<MediaUiModel>> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 30,
+                enablePlaceholders = false,
+                prefetchDistance = 3
+            ),
+            pagingSourceFactory = {
+                MediaPagingSource(
+                    imageRemoteDataSource,
+                    videoRemoteDataSource,
+                    mediaDtoMapper,
+                    query
+                )
+            }
+        ).flow
     }
 }
