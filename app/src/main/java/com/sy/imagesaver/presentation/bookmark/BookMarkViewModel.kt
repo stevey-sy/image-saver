@@ -2,9 +2,9 @@ package com.sy.imagesaver.presentation.bookmark
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sy.imagesaver.data.mapper.MediaEntityMapper
 import com.sy.imagesaver.domain.usecase.GetBookmarkedMediaUseCase
-import com.sy.imagesaver.presentation.model.MediaUiModel
+import com.sy.imagesaver.domain.usecase.DeleteBookmarkUseCase
+import com.sy.imagesaver.presentation.model.BookmarkUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,11 +16,11 @@ import javax.inject.Inject
 @HiltViewModel
 class BookMarkViewModel @Inject constructor(
     private val getBookmarkedMediaUseCase: GetBookmarkedMediaUseCase,
-    private val mediaEntityMapper: MediaEntityMapper
+    private val deleteBookmarkUseCase: DeleteBookmarkUseCase
 ) : ViewModel() {
     
-    private val _bookmarkedMedia = MutableStateFlow<List<MediaUiModel>>(emptyList())
-    val bookmarkedMedia: StateFlow<List<MediaUiModel>> = _bookmarkedMedia.asStateFlow()
+    private val _bookmarkedMedia = MutableStateFlow<List<BookmarkUiModel>>(emptyList())
+    val bookmarkedMedia: StateFlow<List<BookmarkUiModel>> = _bookmarkedMedia.asStateFlow()
     
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -28,22 +28,29 @@ class BookMarkViewModel @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
     
+    // 삭제 모드 관련 상태
+    private val _isDeleteMode = MutableStateFlow(false)
+    val isDeleteMode: StateFlow<Boolean> = _isDeleteMode.asStateFlow()
+    
+    private val _selectedItems = MutableStateFlow<Set<Int>>(emptySet())
+    val selectedItems: StateFlow<Set<Int>> = _selectedItems.asStateFlow()
+    
     init {
         loadBookmarkedMedia()
     }
     
-    fun loadBookmarkedMedia() {
+    private fun loadBookmarkedMedia() {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
                 _error.value = null
                 
                 getBookmarkedMediaUseCase.getAllBookmarkedMedia()
-                    .map { mediaEntities ->
-                        mediaEntityMapper.toMediaUiModelList(mediaEntities)
+                    .map { bookmarks ->
+                        bookmarks.map { BookmarkUiModel.fromBookmark(it) }
                     }
-                    .collect { mediaUiModels ->
-                        _bookmarkedMedia.value = mediaUiModels
+                    .collect { bookmarkUiModels ->
+                        _bookmarkedMedia.value = bookmarkUiModels
                         _isLoading.value = false
                     }
                     
@@ -54,18 +61,18 @@ class BookMarkViewModel @Inject constructor(
         }
     }
     
-    fun loadBookmarkedMediaByType(type: String) {
+    private fun loadBookmarkedMediaByType(type: String) {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
                 _error.value = null
                 
                 getBookmarkedMediaUseCase.getBookmarkedMediaByType(type)
-                    .map { mediaEntities ->
-                        mediaEntityMapper.toMediaUiModelList(mediaEntities)
+                    .map { bookmarks ->
+                        bookmarks.map { BookmarkUiModel.fromBookmark(it) }
                     }
-                    .collect { mediaUiModels ->
-                        _bookmarkedMedia.value = mediaUiModels
+                    .collect { bookmarkUiModels ->
+                        _bookmarkedMedia.value = bookmarkUiModels
                         _isLoading.value = false
                     }
                     
@@ -82,6 +89,63 @@ class BookMarkViewModel @Inject constructor(
     
     fun clearError() {
         _error.value = null
+    }
+    
+    // 삭제 모드 관련 함수들
+    fun toggleDeleteMode() {
+        _isDeleteMode.value = !_isDeleteMode.value
+        if (!_isDeleteMode.value) {
+            _selectedItems.value = emptySet()
+        }
+    }
+    
+    fun toggleItemSelection(itemId: Int) {
+        val currentSelected = _selectedItems.value.toMutableSet()
+        if (currentSelected.contains(itemId)) {
+            currentSelected.remove(itemId)
+        } else {
+            currentSelected.add(itemId)
+        }
+        _selectedItems.value = currentSelected
+    }
+    
+    fun selectAllItems() {
+        val allIds = _bookmarkedMedia.value.map { it.id }.toSet()
+        _selectedItems.value = allIds
+    }
+    
+    fun clearSelection() {
+        _selectedItems.value = emptySet()
+    }
+    
+    fun deleteSelectedItems() {
+        viewModelScope.launch {
+            try {
+                _isLoading.value = true
+                _error.value = null
+                
+                val selectedIds = _selectedItems.value
+                if (selectedIds.isNotEmpty()) {
+                    // 선택된 아이템들을 삭제
+                    selectedIds.forEach { itemId ->
+                        deleteBookmarkUseCase(itemId)
+                    }
+                    
+                    // 삭제 후 목록 새로고침
+                    loadBookmarkedMedia()
+                    
+                    // 삭제 모드 종료
+                    _isDeleteMode.value = false
+                    _selectedItems.value = emptySet()
+                }
+                
+                _isLoading.value = false
+                
+            } catch (e: Exception) {
+                _error.value = "선택된 미디어 삭제에 실패했습니다: ${e.message}"
+                _isLoading.value = false
+            }
+        }
     }
 }
 

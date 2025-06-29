@@ -1,27 +1,27 @@
 package com.sy.imagesaver.domain.usecase
 
-import com.sy.imagesaver.data.local.datasource.MediaLocalDataSource
-import com.sy.imagesaver.data.local.entity.MediaEntity
+import com.sy.imagesaver.data.repository.BookmarkRepository
+import com.sy.imagesaver.domain.data.Bookmark
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class GetBookmarkedMediaUseCase @Inject constructor(
-    private val mediaLocalDataSource: MediaLocalDataSource
+    private val bookmarkRepository: BookmarkRepository
 ) {
     
-    fun getAllBookmarkedMedia(): Flow<List<MediaEntity>> {
-        return mediaLocalDataSource.getAllMedia()
+    fun getAllBookmarkedMedia(): Flow<List<Bookmark>> {
+        return bookmarkRepository.getAllBookmarkedMedia()
     }
     
-    fun getBookmarkedMediaByType(type: String): Flow<List<MediaEntity>> {
-        return mediaLocalDataSource.getMediaByType(type)
+    fun getBookmarkedMediaByType(type: String): Flow<List<Bookmark>> {
+        return bookmarkRepository.getBookmarkedMediaByType(type)
     }
     
-    suspend fun getBookmarkedMediaById(id: Int): MediaEntity? {
-        return mediaLocalDataSource.getMediaById(id)
+    suspend fun getBookmarkedMediaById(id: Int): Bookmark? {
+        return bookmarkRepository.getBookmarkedMediaById(id)
     }
     
     suspend fun getBookmarkedMediaCount(): Int {
-        return mediaLocalDataSource.getMediaCount()
+        return bookmarkRepository.getBookmarkCount()
     }
 } 

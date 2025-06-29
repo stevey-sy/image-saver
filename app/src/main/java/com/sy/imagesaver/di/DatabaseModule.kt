@@ -3,7 +3,10 @@ package com.sy.imagesaver.di
 import android.content.Context
 import androidx.room.Room
 import com.sy.imagesaver.data.local.AppDatabase
-import com.sy.imagesaver.data.local.dao.MediaDao
+import com.sy.imagesaver.data.local.dao.BookmarkDao
+import com.sy.imagesaver.data.local.datasource.BookmarkLocalDataSource
+import com.sy.imagesaver.data.local.datasource.BookmarkLocalDataSourceImpl
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,8 +28,8 @@ object DatabaseModule {
     
     @Provides
     @Singleton
-    fun provideMediaDao(database: AppDatabase): MediaDao {
-        return database.mediaDao()
+    fun provideBookmarkDao(database: AppDatabase): BookmarkDao {
+        return database.bookmarkDao()
     }
 }
 
@@ -34,9 +37,9 @@ object DatabaseModule {
 @InstallIn(SingletonComponent::class)
 interface DatabaseModuleBinds {
     
-    @dagger.Binds
+    @Binds
     @Singleton
-    fun bindMediaLocalDataSource(
-        mediaLocalDataSourceImpl: com.sy.imagesaver.data.local.datasource.MediaLocalDataSourceImpl
-    ): com.sy.imagesaver.data.local.datasource.MediaLocalDataSource
+    fun bindBookmarkLocalDataSource(
+        bookmarkLocalDataSourceImpl: BookmarkLocalDataSourceImpl
+    ): BookmarkLocalDataSource
 } 

@@ -2,13 +2,10 @@ package com.sy.imagesaver.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.sy.imagesaver.domain.data.MediaType
 
-enum class MediaType {
-    IMAGE, VIDEO
-}
-
-@Entity(tableName = "media")
-data class MediaEntity(
+@Entity(tableName = "bookmark")
+data class BookmarkEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val thumbnailUrl: String,

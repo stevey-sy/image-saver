@@ -5,19 +5,19 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import android.content.Context
-import com.sy.imagesaver.data.local.dao.MediaDao
-import com.sy.imagesaver.data.local.entity.MediaEntity
+import com.sy.imagesaver.data.local.dao.BookmarkDao
 import com.sy.imagesaver.data.local.converter.MediaTypeConverter
+import com.sy.imagesaver.data.local.entity.BookmarkEntity
 
 @Database(
-    entities = [MediaEntity::class],
+    entities = [BookmarkEntity::class],
     version = 1,
     exportSchema = false
 )
 @TypeConverters(MediaTypeConverter::class)
 abstract class AppDatabase : RoomDatabase() {
     
-    abstract fun mediaDao(): MediaDao
+    abstract fun bookmarkDao(): BookmarkDao
     
     companion object {
         @Volatile
