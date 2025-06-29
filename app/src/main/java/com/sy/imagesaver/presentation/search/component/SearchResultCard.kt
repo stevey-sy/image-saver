@@ -11,11 +11,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.sy.imagesaver.R
 import com.sy.imagesaver.presentation.model.SearchResultUiModel
 import com.sy.imagesaver.presentation.theme.AppIcons
 
@@ -48,7 +50,7 @@ fun SearchResultCard(
                         .data(media.thumbnailUrl)
                         .crossfade(true)
                         .build(),
-                    contentDescription = "미디어 썸네일",
+                    contentDescription = stringResource(R.string.media_thumbnail_description),
                     modifier = Modifier
                         .fillMaxSize(),
                     contentScale = ContentScale.Crop
@@ -68,7 +70,7 @@ fun SearchResultCard(
                     ) {
                         Icon(
                             painter = AppIcons.CheckCircle,
-                            contentDescription = "북마크됨",
+                            contentDescription = stringResource(R.string.bookmarked_description),
                             tint = Color.Green,
                             modifier = Modifier.size(16.dp)
                         )
@@ -90,7 +92,7 @@ fun SearchResultCard(
                         ) {
                             Icon(
                                 imageVector = AppIcons.ImageType,
-                                contentDescription = "이미지",
+                                contentDescription = stringResource(R.string.image_type_description),
                                 tint = Color.White,
                                 modifier = Modifier.size(16.dp)
                             )
@@ -110,7 +112,7 @@ fun SearchResultCard(
                         ) {
                             Icon(
                                 imageVector = AppIcons.VideoType,
-                                contentDescription = "비디오",
+                                contentDescription = stringResource(R.string.video_type_description),
                                 tint = Color.White,
                                 modifier = Modifier.size(16.dp)
                             )
