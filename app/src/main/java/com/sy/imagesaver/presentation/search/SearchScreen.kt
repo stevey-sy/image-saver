@@ -65,16 +65,16 @@ fun SearchScreen(
                     onRetry = { viewModel.retrySearch() }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-            }
+                            }
 
             // 검색 결과 영역
             SearchContent(
                 uiState = uiState,
                 viewModel = viewModel
             )
-        }
-    }
-}
+                        }
+                    }
+                }
 
 @Composable
 private fun SearchContent(
@@ -84,10 +84,10 @@ private fun SearchContent(
     when {
         // 검색 대기 상태
         uiState.isSearching && uiState.searchQuery.isNotBlank() -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
                 CircularProgress(
                     isLoading = true,
                     alignment = Alignment.Center
@@ -166,7 +166,7 @@ private suspend fun subscribeToSnackBarEvents(
         when (event) {
             is SearchViewModel.SnackBarEvent.Success -> {
                 snackBarManager.showSuccessSnackbar(event.message)
-            }
+                    }
             is SearchViewModel.SnackBarEvent.Error -> {
                 snackBarManager.showErrorSnackbar(event.message)
             }
@@ -187,8 +187,8 @@ private suspend fun handleLoadStateChanges(
             viewModel.clearError()
         }
         else -> {}
-    }
-}
+                }
+            }
 
 
 
