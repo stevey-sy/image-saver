@@ -203,7 +203,7 @@ fun BookMarkScreen(
                         imageVector = AppIcons.Bookmark,
                         contentDescription = "북마크",
                         modifier = Modifier.size(64.dp),
-                        tint = Orange
+                        tint = Color.Black
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
