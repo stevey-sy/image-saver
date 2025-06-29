@@ -23,7 +23,7 @@ class BookMarkViewModel @Inject constructor(
 ) : ViewModel() {
     
     private val _bookmarkedMedia = MutableStateFlow<List<BookmarkUiModel>>(emptyList())
-    val bookmarkedMedia: StateFlow<List<BookmarkUiModel>> = _bookmarkedMedia.asStateFlow()
+    val bookmarkList: StateFlow<List<BookmarkUiModel>> = _bookmarkedMedia.asStateFlow()
     
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()

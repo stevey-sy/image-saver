@@ -12,6 +12,18 @@
     <string name="image_type_description">이미지</string>
     <string name="video_type_description">비디오</string>
     
+    <!-- BookMarkScreen -->
+    <string name="bookmark_icon_description">북마크</string>
+    <string name="my_bookmark_title">나의 보관함</string>
+    <string name="total_count_format">Total: %d</string>
+    <string name="select_all">전체</string>
+    <string name="selected_count_format">%d개 선택됨</string>
+    <string name="cancel">취소</string>
+    <string name="delete">삭제</string>
+    <string name="no_saved_media">저장된 미디어가 없습니다</string>
+    <string name="no_saved_media_description">검색 화면에서 미디어를 저장해보세요</string>
+    <string name="bookmark_icon_empty_description">북마크</string>
+    
     <!-- Error Messages -->
     <string name="retry">다시 시도</string>
 </resources>
