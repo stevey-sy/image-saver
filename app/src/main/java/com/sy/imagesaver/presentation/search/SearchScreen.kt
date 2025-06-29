@@ -26,8 +26,9 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import com.sy.imagesaver.presentation.manager.SnackBarManager
 import com.sy.imagesaver.presentation.search.component.SearchResultCard
+import kotlinx.coroutines.FlowPreview
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
 @Composable
 fun SearchScreen(
     viewModel: SearchViewModel = hiltViewModel(),
@@ -53,21 +54,6 @@ fun SearchScreen(
                 }
             }
         }
-    }
-
-    // 검색어 입력 후 0.8초 후 자동 검색
-    var isFirstLaunch by remember { mutableStateOf(true) }
-
-    LaunchedEffect(Unit) {
-        snapshotFlow { searchQuery }
-            .debounce(800)
-            .distinctUntilChanged()
-            .collectLatest { searchText ->
-                if (searchText.isNotBlank() && !isFirstLaunch) {
-                    viewModel.searchMedia(searchText)
-                }
-                isFirstLaunch = false
-            }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
