@@ -82,7 +82,7 @@ fun SearchResultCard(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Black)
+                    .background(Color.DarkGray)
                     .padding(12.dp)
             ) {
                 when (media) {

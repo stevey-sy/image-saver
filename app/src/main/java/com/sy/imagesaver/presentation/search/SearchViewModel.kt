@@ -79,7 +79,7 @@ class SearchViewModel @Inject constructor(
         
         viewModelScope.launch {
             searchQuery
-                .debounce(800) // 5초 디바운싱
+                .debounce(500) // 5초 디바운싱
                 .collect { query ->
                     _debouncedSearchQuery.value = query
                     _isSearching.value = false
