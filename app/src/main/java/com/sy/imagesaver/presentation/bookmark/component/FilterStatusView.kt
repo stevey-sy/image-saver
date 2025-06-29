@@ -1,5 +1,11 @@
 package com.sy.imagesaver.presentation.bookmark.component
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,44 +32,56 @@ fun FilterStatusView(
     filterType: MediaType?,
     onClearFilter: () -> Unit
 ) {
-    // 필터가 선택되지 않았으면 표시하지 않음
-    if (filterType == null) {
-        return
-    }
-    
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .background(
-                color = Color.Gray,
-                shape = MaterialTheme.shapes.small
-            )
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        contentAlignment = Alignment.CenterStart
+    AnimatedVisibility(
+        visible = filterType != null,
+        enter = slideInVertically(
+            animationSpec = tween(300),
+            initialOffsetY = { -it }
+        ) + fadeIn(
+            animationSpec = tween(300)
+        ),
+        exit = slideOutVertically(
+            animationSpec = tween(300),
+            targetOffsetY = { -it }
+        ) + fadeOut(
+            animationSpec = tween(300)
+        )
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = when (filterType) {
-                    MediaType.IMAGE -> "이미지만 보여요."
-                    MediaType.VIDEO -> "영상만 보여요."
-                },
-                style = typography.bodyMedium,
-                color = Color.White
-            )
-            IconButton(
-                onClick = onClearFilter,
-                modifier = Modifier.size(24.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "필터 해제",
-                    tint = Color.White
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp)
+                .background(
+                    color = Color.Gray,
+                    shape = MaterialTheme.shapes.small
                 )
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = when (filterType) {
+                        MediaType.IMAGE -> "이미지만 보여요."
+                        MediaType.VIDEO -> "영상만 보여요."
+                        null -> ""
+                    },
+                    style = typography.bodyMedium,
+                    color = Color.White
+                )
+                IconButton(
+                    onClick = onClearFilter,
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "필터 해제",
+                        tint = Color.White
+                    )
+                }
             }
         }
     }

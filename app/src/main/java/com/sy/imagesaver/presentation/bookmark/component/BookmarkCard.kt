@@ -13,11 +13,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import com.sy.imagesaver.R
 import com.sy.imagesaver.presentation.model.BookmarkUiModel
 import com.sy.imagesaver.presentation.theme.AppIcons
 import com.sy.imagesaver.presentation.theme.Orange
@@ -33,6 +35,12 @@ fun BookmarkCard(
     onImageClick: () -> Unit = {},
     onVideoClick: () -> Unit = {}
 ) {
+    // 문자열 리소스를 미리 가져오기
+    val imageTypeDescription = stringResource(R.string.image_type_description)
+    val videoTypeDescription = stringResource(R.string.video_type_description)
+    val bookmarkThumbnailDescription = stringResource(R.string.bookmark_thumbnail_description)
+    val selectedDescription = stringResource(R.string.selected_description)
+    
     Card(
         modifier = modifier
             .height(200.dp)
@@ -58,7 +66,7 @@ fun BookmarkCard(
                         .data(bookmark.thumbnailUrl)
                         .crossfade(true)
                         .build(),
-                    contentDescription = "북마크 썸네일",
+                    contentDescription = bookmarkThumbnailDescription,
                     modifier = Modifier
                         .fillMaxSize()
                         .clickable { 
@@ -66,8 +74,8 @@ fun BookmarkCard(
                                 onSelectionChanged()
                             } else {
                                 when (bookmark.type) {
-                                    "이미지" -> onImageClick()
-                                    "비디오" -> onVideoClick()
+                                    imageTypeDescription -> onImageClick()
+                                    videoTypeDescription -> onVideoClick()
                                 }
                             }
                         },
@@ -90,7 +98,7 @@ fun BookmarkCard(
                         if (isSelected) {
                             Icon(
                                 imageVector = Icons.Default.Check,
-                                contentDescription = "선택됨",
+                                contentDescription = selectedDescription,
                                 tint = Color.Black,
                                 modifier = Modifier.size(16.dp)
                             )
@@ -110,7 +118,7 @@ fun BookmarkCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = if (bookmark.type == "이미지") AppIcons.ImageType else AppIcons.VideoType,
+                        imageVector = if (bookmark.type == imageTypeDescription) AppIcons.ImageType else AppIcons.VideoType,
                         contentDescription = bookmark.type,
                         tint = Color.White,
                         modifier = Modifier.size(16.dp)

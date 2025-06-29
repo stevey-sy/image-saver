@@ -24,6 +24,10 @@
     <string name="no_saved_media_description">검색 화면에서 미디어를 저장해보세요</string>
     <string name="bookmark_icon_empty_description">북마크</string>
     
+    <!-- BookmarkCard -->
+    <string name="bookmark_thumbnail_description">북마크 썸네일</string>
+    <string name="selected_description">선택됨</string>
+    
     <!-- SearchViewModel Messages -->
     <string name="bookmark_save_success">보관함에 저장되었습니다.</string>
     <string name="bookmark_save_failed">저장에 실패했습니다: %s</string>
