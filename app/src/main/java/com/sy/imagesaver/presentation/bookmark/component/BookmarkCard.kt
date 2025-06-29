@@ -29,7 +29,9 @@ fun BookmarkCard(
     isDeleteMode: Boolean = false,
     isSelected: Boolean = false,
     onItemClick: () -> Unit = {},
-    onSelectionChanged: () -> Unit = {}
+    onSelectionChanged: () -> Unit = {},
+    onImageClick: () -> Unit = {},
+    onVideoClick: () -> Unit = {}
 ) {
     Card(
         modifier = modifier
@@ -58,7 +60,15 @@ fun BookmarkCard(
                         .build(),
                     contentDescription = "북마크 썸네일",
                     modifier = Modifier
-                        .fillMaxSize(),
+                        .fillMaxSize()
+                        .clickable { 
+                            if (!isDeleteMode) {
+                                when (bookmark.type) {
+                                    "이미지" -> onImageClick()
+                                    "비디오" -> onVideoClick()
+                                }
+                            }
+                        },
                     contentScale = ContentScale.Crop
                 )
                 

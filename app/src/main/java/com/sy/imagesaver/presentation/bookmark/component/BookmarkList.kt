@@ -35,6 +35,12 @@ fun BookmarkList(
                 modifier = Modifier.fillMaxWidth(),
                 onSelectionChanged = {
                     viewModel.toggleItemSelection(bookmarkItem.id)
+                },
+                onImageClick = {
+                    viewModel.showImagePopup(bookmarkItem.originalUrl)
+                },
+                onVideoClick = {
+                    viewModel.showVideoPopup(bookmarkItem.originalUrl)
                 }
             )
         }

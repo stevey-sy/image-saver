@@ -6,6 +6,7 @@ import com.sy.imagesaver.domain.usecase.GetBookmarkedMediaUseCase
 import com.sy.imagesaver.domain.usecase.DeleteBookmarkUseCase
 import com.sy.imagesaver.presentation.model.BookmarkUiModel
 import com.sy.imagesaver.domain.data.MediaType
+import com.sy.imagesaver.presentation.search.SearchViewModel.SnackBarEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -42,6 +43,20 @@ class BookMarkViewModel @Inject constructor(
     // 필터 관련 상태
     private val _selectedFilter = MutableStateFlow<MediaType?>(null)
     val selectedFilter: StateFlow<MediaType?> = _selectedFilter.asStateFlow()
+    
+    // 이미지 팝업 관련 상태
+    private val _showImagePopup = MutableStateFlow(false)
+    val showImagePopup: StateFlow<Boolean> = _showImagePopup.asStateFlow()
+    
+    private val _selectedImageUrl = MutableStateFlow<String?>(null)
+    val selectedImageUrl: StateFlow<String?> = _selectedImageUrl.asStateFlow()
+    
+    // 비디오 팝업 관련 상태
+    private val _showVideoPopup = MutableStateFlow(false)
+    val showVideoPopup: StateFlow<Boolean> = _showVideoPopup.asStateFlow()
+    
+    private val _selectedVideoUrl = MutableStateFlow<String?>(null)
+    val selectedVideoUrl: StateFlow<String?> = _selectedVideoUrl.asStateFlow()
     
     // SnackBar 메시지를 위한 이벤트
     private val _snackBarEvent = MutableSharedFlow<SnackBarEvent>()
@@ -91,6 +106,30 @@ class BookMarkViewModel @Inject constructor(
         viewModelScope.launch {
             _selectedFilter.collect { selectedFilter ->
                 updateUiState { it.copy(selectedFilter = selectedFilter) }
+            }
+        }
+        
+        viewModelScope.launch {
+            _showImagePopup.collect { showImagePopup ->
+                updateUiState { it.copy(showImagePopup = showImagePopup) }
+            }
+        }
+        
+        viewModelScope.launch {
+            _selectedImageUrl.collect { selectedImageUrl ->
+                updateUiState { it.copy(selectedImageUrl = selectedImageUrl) }
+            }
+        }
+        
+        viewModelScope.launch {
+            _showVideoPopup.collect { showVideoPopup ->
+                updateUiState { it.copy(showVideoPopup = showVideoPopup) }
+            }
+        }
+        
+        viewModelScope.launch {
+            _selectedVideoUrl.collect { selectedVideoUrl ->
+                updateUiState { it.copy(selectedVideoUrl = selectedVideoUrl) }
             }
         }
     }
@@ -239,6 +278,28 @@ class BookMarkViewModel @Inject constructor(
         }
     }
     
+    // 이미지 팝업 관련 함수들
+    fun showImagePopup(imageUrl: String) {
+        _selectedImageUrl.value = imageUrl
+        _showImagePopup.value = true
+    }
+    
+    fun hideImagePopup() {
+        _showImagePopup.value = false
+        _selectedImageUrl.value = null
+    }
+    
+    // 비디오 팝업 관련 함수들
+    fun showVideoPopup(videoUrl: String) {
+        _selectedVideoUrl.value = videoUrl
+        _showVideoPopup.value = true
+    }
+    
+    fun hideVideoPopup() {
+        _showVideoPopup.value = false
+        _selectedVideoUrl.value = null
+    }
+    
     sealed class SnackBarEvent {
         data class Success(val message: String) : SnackBarEvent()
         data class Error(val message: String) : SnackBarEvent()
@@ -250,7 +311,11 @@ class BookMarkViewModel @Inject constructor(
         val error: String? = null,
         val isDeleteMode: Boolean = false,
         val selectedItems: Set<Int> = emptySet(),
-        val selectedFilter: MediaType? = null
+        val selectedFilter: MediaType? = null,
+        val showImagePopup: Boolean = false,
+        val selectedImageUrl: String? = null,
+        val showVideoPopup: Boolean = false,
+        val selectedVideoUrl: String? = null
     )
 }
 
