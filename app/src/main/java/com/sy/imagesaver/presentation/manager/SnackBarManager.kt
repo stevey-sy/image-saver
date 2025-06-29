@@ -4,6 +4,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -14,21 +15,30 @@ class SnackBarManager @Inject constructor() {
     
     private var snackbarHostState: SnackbarHostState? = null
     private var coroutineScope: CoroutineScope? = null
+    private var showSnackbarWithColor: ((String, Color) -> Unit)? = null
     
     fun setSnackbarHostState(hostState: SnackbarHostState, scope: CoroutineScope) {
         this.snackbarHostState = hostState
         this.coroutineScope = scope
     }
     
+    fun setShowSnackbarWithColor(callback: (String, Color) -> Unit) {
+        this.showSnackbarWithColor = callback
+    }
+    
     fun showSnackbar(
         message: String,
         duration: SnackbarDuration = SnackbarDuration.Short
     ) {
+        println("SnackBarManager: showSnackbar 호출됨 - message: $message, duration: $duration")
+        println("SnackBarManager: snackbarHostState: $snackbarHostState, coroutineScope: $coroutineScope")
         coroutineScope?.launch {
+            println("SnackBarManager: SnackBar 표시 시작")
             snackbarHostState?.showSnackbar(
                 message = message,
                 duration = duration.toSnackbarDuration()
             )
+            println("SnackBarManager: SnackBar 표시 완료")
         }
     }
     
@@ -49,6 +59,14 @@ class SnackBarManager @Inject constructor() {
                 onAction()
             }
         }
+    }
+    
+    fun showSuccessSnackbar(message: String, duration: SnackbarDuration = SnackbarDuration.Short) {
+        showSnackbarWithColor?.invoke(message, Color(0xFF4CAF50)) // 초록색
+    }
+    
+    fun showErrorSnackbar(message: String, duration: SnackbarDuration = SnackbarDuration.Long) {
+        showSnackbarWithColor?.invoke(message, Color(0xFFF44336)) // 붉은색
     }
     
     enum class SnackbarDuration {

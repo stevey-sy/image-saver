@@ -21,8 +21,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,6 +37,12 @@ import com.sy.imagesaver.presentation.navigation.NavGraph
 import com.sy.imagesaver.presentation.navigation.Screen
 import com.sy.imagesaver.presentation.theme.ImageSaverTheme
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.compose.material3.SnackbarDefaults
+import androidx.compose.material3.SnackbarVisuals
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.material3.Snackbar
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -58,9 +66,29 @@ fun MainScreen() {
     val coroutineScope = rememberCoroutineScope()
     val snackBarManager = rememberSnackBarManager()
     
+    // SnackBar 색상 상태
+    var snackbarColor by remember { mutableStateOf(Color(0xFF4CAF50)) } // 기본 초록색
+    
+    // 액션 버튼 색상 계산
+    val actionColor = when {
+        snackbarColor == Color(0xFF4CAF50) -> Color(0xFFE8F5E8) // 초록색 배경일 때 연한 초록색
+        snackbarColor == Color(0xFFF44336) -> Color(0xFFFFEBEE) // 붉은색 배경일 때 연한 붉은색
+        else -> Color(0xFFE8F5E8) // 기본값
+    }
+    
     // SnackBarManager에 SnackbarHostState 설정
     LaunchedEffect(snackbarHostState, coroutineScope) {
         snackBarManager.setSnackbarHostState(snackbarHostState, coroutineScope)
+    }
+    
+    // SnackBarManager에 색상 변경 콜백 설정
+    LaunchedEffect(snackBarManager) {
+        snackBarManager.setShowSnackbarWithColor { message, color ->
+            snackbarColor = color
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar(message)
+            }
+        }
     }
     
     Scaffold(
@@ -98,10 +126,24 @@ fun MainScreen() {
                 }
             }
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { 
+            SnackbarHost(
+                hostState = snackbarHostState,
+                snackbar = { snackbarData ->
+                    Snackbar(
+                        snackbarData = snackbarData,
+                        containerColor = snackbarColor, // 동적 색상 적용
+                        contentColor = Color.White, // 흰색 텍스트
+                        actionContentColor = actionColor, // 동적 액션 버튼 색상
+                        shape = SnackbarDefaults.shape,
+                    )
+                }
+            )
+        }
     ) { innerPadding ->
         NavGraph(
             navController = navController,
+            snackBarManager = snackBarManager,
             modifier = Modifier.padding(innerPadding)
         )
     }

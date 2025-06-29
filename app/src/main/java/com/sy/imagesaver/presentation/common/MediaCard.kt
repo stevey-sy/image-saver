@@ -25,8 +25,8 @@ import com.sy.imagesaver.presentation.theme.AppIcons
 fun MediaCard(
     media: MediaUiModel,
     modifier: Modifier = Modifier,
-    isBookmarked: Boolean = false, // 기본값 false로 설정하여 선택적 사용
-    showBookmarkIcon: Boolean = true, // 북마크 아이콘 표시 여부
+    isBookmarked: Boolean = false,
+    showBookmarkIcon: Boolean = true,
     onItemClick: () -> Unit = {}
 ) {
     Card(
@@ -95,7 +95,7 @@ fun MediaCard(
                                 tint = Color.White,
                                 modifier = Modifier.size(16.dp)
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = media.datetime,
                                 style = MaterialTheme.typography.bodySmall,
@@ -115,7 +115,7 @@ fun MediaCard(
                                 tint = Color.White,
                                 modifier = Modifier.size(16.dp)
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = media.datetime,
                                 style = MaterialTheme.typography.bodySmall,

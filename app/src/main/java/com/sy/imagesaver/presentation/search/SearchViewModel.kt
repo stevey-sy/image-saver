@@ -113,7 +113,7 @@ class SearchViewModel @Inject constructor(
                 
                 // SnackBar 이벤트 발생
                 _snackBarEvent.emit(
-                    SnackBarEvent.Success("미디어가 저장되었습니다. (ID: $id)")
+                    SnackBarEvent.Success("미디어가 저장되었습니다.")
                 )
                 
             } catch (e: Exception) {

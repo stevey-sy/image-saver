@@ -36,7 +36,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import com.sy.imagesaver.presentation.manager.SnackBarManager
-import com.sy.imagesaver.presentation.manager.rememberSnackBarManager
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import kotlinx.coroutines.delay
@@ -45,29 +44,26 @@ import com.sy.imagesaver.presentation.common.MediaCard
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
-    viewModel: SearchViewModel = hiltViewModel()
+    viewModel: SearchViewModel = hiltViewModel(),
+    snackBarManager: SnackBarManager
 ) {
     val searchQuery by viewModel.searchQuery.collectAsState()
     val error by viewModel.error.collectAsState()
     val bookmarkedThumbnailUrls by viewModel.bookmarkedThumbnailUrls.collectAsState()
     val focusManager = LocalFocusManager.current
-    val snackBarManager = rememberSnackBarManager()
 
     // SnackBar 이벤트 구독
     LaunchedEffect(Unit) {
         viewModel.snackBarEvent.collect { event ->
+            println("SearchScreen: SnackBar 이벤트 수신: $event")
             when (event) {
                 is SearchViewModel.SnackBarEvent.Success -> {
-                    snackBarManager.showSnackbar(
-                        message = event.message,
-                        duration = SnackBarManager.SnackbarDuration.Short
-                    )
+                    println("SearchScreen: Success SnackBar 표시 시도: ${event.message}")
+                    snackBarManager.showSuccessSnackbar(event.message)
                 }
                 is SearchViewModel.SnackBarEvent.Error -> {
-                    snackBarManager.showSnackbar(
-                        message = event.message,
-                        duration = SnackBarManager.SnackbarDuration.Long
-                    )
+                    println("SearchScreen: Error SnackBar 표시 시도: ${event.message}")
+                    snackBarManager.showErrorSnackbar(event.message)
                 }
             }
         }
