@@ -22,12 +22,12 @@ import com.sy.imagesaver.presentation.search.SearchViewModel
 
 @Composable
 fun SearchTextArea(
-    query: String,
+    searchQuery: String,
     viewModel: SearchViewModel,
     focusManager: FocusManager
 ) {
     TextField(
-        value = query,
+        value = searchQuery,
         onValueChange = {
             viewModel.updateSearchQuery(it)
         },
@@ -41,7 +41,7 @@ fun SearchTextArea(
             )
         },
         trailingIcon = {
-            if (query.isNotEmpty()) {
+            if (searchQuery.isNotEmpty()) {
                 IconButton(onClick = {
                     viewModel.updateSearchQuery("")
                 }) {

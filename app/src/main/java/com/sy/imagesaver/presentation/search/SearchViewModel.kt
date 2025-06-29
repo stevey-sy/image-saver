@@ -23,6 +23,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.combine
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
@@ -56,12 +57,19 @@ class SearchViewModel @Inject constructor(
     private val _snackBarEvent = MutableSharedFlow<SnackBarEvent>()
     val snackBarEvent = _snackBarEvent.asSharedFlow()
     
+    // UI 상태를 하나로 통합
+    private val _uiState = MutableStateFlow(UiState())
+    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+    
     init {
         // 앱 시작 시 기존 북마크된 아이템들 로드
         loadBookmarkedItems()
         
         // 디바운싱 로직 설정
         setupDebouncing()
+        
+        // 개별 상태들을 UiState로 통합
+        setupUiStateUpdates()
     }
     
     private fun setupDebouncing() {
@@ -195,8 +203,52 @@ class SearchViewModel @Inject constructor(
         setError(errorMessage)
     }
     
+    private fun setupUiStateUpdates() {
+        viewModelScope.launch {
+            _searchQuery.collect { searchQuery ->
+                updateUiState { it.copy(searchQuery = searchQuery) }
+            }
+        }
+        
+        viewModelScope.launch {
+            _debouncedSearchQuery.collect { debouncedSearchQuery ->
+                updateUiState { it.copy(debouncedSearchQuery = debouncedSearchQuery) }
+            }
+        }
+        
+        viewModelScope.launch {
+            _isSearching.collect { isSearching ->
+                updateUiState { it.copy(isSearching = isSearching) }
+            }
+        }
+        
+        viewModelScope.launch {
+            _error.collect { error ->
+                updateUiState { it.copy(error = error) }
+            }
+        }
+        
+        viewModelScope.launch {
+            _bookmarkedThumbnailUrls.collect { bookmarkedThumbnailUrls ->
+                updateUiState { it.copy(bookmarkedThumbnailUrls = bookmarkedThumbnailUrls) }
+            }
+        }
+    }
+    
+    private fun updateUiState(update: (UiState) -> UiState) {
+        _uiState.value = update(_uiState.value)
+    }
+    
     sealed class SnackBarEvent {
         data class Success(val message: String) : SnackBarEvent()
         data class Error(val message: String) : SnackBarEvent()
     }
+    
+    data class UiState(
+        val searchQuery: String = "",
+        val debouncedSearchQuery: String = "",
+        val isSearching: Boolean = false,
+        val error: String? = null,
+        val bookmarkedThumbnailUrls: Set<String> = emptySet()
+    )
 }
