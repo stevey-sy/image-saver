@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -21,6 +22,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -47,9 +50,12 @@ import androidx.compose.material3.SnackbarVisuals
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.material3.Snackbar
+import androidx.compose.runtime.collectAsState
 import kotlinx.coroutines.launch
 import com.sy.imagesaver.presentation.bookmark.BookMarkViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.unit.dp
+import com.sy.imagesaver.domain.data.MediaType
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -73,6 +79,10 @@ fun MainScreen() {
     val coroutineScope = rememberCoroutineScope()
     val snackBarManager = rememberSnackBarManager()
     val bookMarkViewModel: BookMarkViewModel = hiltViewModel()
+    
+    // 필터 dropdown 상태
+    var showFilterDropdown by remember { mutableStateOf(false) }
+    val selectedFilter by bookMarkViewModel.selectedFilter.collectAsState()
     
     // SnackBar 색상 상태
     var snackbarColor by remember { mutableStateOf(Color(0xFF4CAF50)) } // 기본 초록색
@@ -113,8 +123,39 @@ fun MainScreen() {
                     val isBookmarkScreen = currentDestination?.hierarchy?.any { it.route == Screen.Bookmark.route } == true
                     
                     if (isBookmarkScreen) {
-                        IconButton(onClick = { /* Handle filter icon click */ }) {
-                            Icon(AppIcons.Filter, contentDescription = "Filter")
+                        Box {
+                            IconButton(onClick = { showFilterDropdown = true }) {
+                                Icon(AppIcons.Filter, contentDescription = "Filter")
+                            }
+                            DropdownMenu(
+                                expanded = showFilterDropdown,
+                                onDismissRequest = { showFilterDropdown = false }
+                            ) {
+                                listOf("전체", "이미지", "영상").forEach { filter ->
+                                    DropdownMenuItem(
+                                        text = { Text(filter) },
+                                        onClick = {
+                                            bookMarkViewModel.updateFilter(filter)
+                                            showFilterDropdown = false
+                                        },
+                                        leadingIcon = {
+                                            val isSelected = when (filter) {
+                                                "전체" -> selectedFilter == null
+                                                "이미지" -> selectedFilter == MediaType.IMAGE
+                                                "영상" -> selectedFilter == MediaType.VIDEO
+                                                else -> false
+                                            }
+                                            if (isSelected) {
+                                                Icon(
+                                                    Icons.Default.Check,
+                                                    contentDescription = "선택됨",
+                                                    tint = Orange
+                                                )
+                                            }
+                                        }
+                                    )
+                                }
+                            }
                         }
                         IconButton(onClick = { bookMarkViewModel.toggleDeleteMode() }) {
                             Icon(AppIcons.Trash, contentDescription = "Trash")

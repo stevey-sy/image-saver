@@ -26,6 +26,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -41,6 +43,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sy.imagesaver.presentation.bookmark.component.BookmarkCard
+import com.sy.imagesaver.presentation.bookmark.component.FilterStatusView
 import com.sy.imagesaver.presentation.theme.AppIcons
 import com.sy.imagesaver.presentation.theme.Orange
 import com.sy.imagesaver.presentation.manager.SnackBarManager
@@ -55,6 +58,7 @@ fun BookMarkScreen(
     val error by viewModel.error.collectAsState()
     val isDeleteMode by viewModel.isDeleteMode.collectAsState()
     val selectedItems by viewModel.selectedItems.collectAsState()
+    val selectedFilter by viewModel.selectedFilter.collectAsState()
 
     // SnackBar 이벤트 구독
     LaunchedEffect(Unit) {
@@ -123,22 +127,39 @@ fun BookMarkScreen(
                     .fillMaxWidth()
                     .padding(bottom = 16.dp)
             ) {
+                // 전체 선택 체크박스
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Checkbox(
+                        checked = selectedItems.size == bookmarkedMedia.size && bookmarkedMedia.isNotEmpty(),
+                        onCheckedChange = { isChecked ->
+                            if (isChecked) {
+                                viewModel.selectAllItems()
+                            } else {
+                                viewModel.clearSelection()
+                            }
+                        },
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = Orange,
+                            uncheckedColor = Color.Gray
+                        )
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "전체",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+                
                 Text(
                     text = "${selectedItems.size}개 선택됨",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
-                Spacer(modifier = Modifier.weight(1f))
-//                TextButton(
-//                    onClick = { viewModel.selectAllItems() }
-//                ) {
-//                    Text("All")
-//                }
-//                TextButton(
-//                    onClick = { viewModel.clearSelection() }
-//                ) {
-//                    Text("선택 해제")
-//                }
+                Spacer(modifier = Modifier.width(16.dp))
                 TextButton(
                     onClick = { viewModel.toggleDeleteMode() }
                 ) {
@@ -155,6 +176,10 @@ fun BookMarkScreen(
                     Text("삭제")
                 }
             }
+        }
+
+        FilterStatusView(filterType = selectedFilter) {
+            viewModel.clearFilter()
         }
 
         // 로딩 상태

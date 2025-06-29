@@ -3,6 +3,7 @@ package com.sy.imagesaver.data.repository
 import com.sy.imagesaver.data.local.datasource.BookmarkLocalDataSource
 import com.sy.imagesaver.data.mapper.BookmarkMapper
 import com.sy.imagesaver.domain.data.Bookmark
+import com.sy.imagesaver.domain.data.MediaType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -12,21 +13,21 @@ class BookmarkRepositoryImpl @Inject constructor(
     private val bookmarkMapper: BookmarkMapper
 ) : BookmarkRepository {
 
-    override fun getAllBookmarkedMedia(): Flow<List<Bookmark>> {
+    override fun getAllBookmarks(): Flow<List<Bookmark>> {
         return bookmarkLocalDataSource.getAllBookmarks()
             .map { bookmarkEntities ->
                 bookmarkMapper.toBookmarkList(bookmarkEntities)
             }
     }
 
-    override fun getBookmarkedMediaByType(type: String): Flow<List<Bookmark>> {
+    override fun getBookmarksByType(type: MediaType): Flow<List<Bookmark>> {
         return bookmarkLocalDataSource.getBookmarksByType(type)
             .map { bookmarkEntities ->
                 bookmarkMapper.toBookmarkList(bookmarkEntities)
             }
     }
 
-    override suspend fun getBookmarkedMediaById(id: Int): Bookmark? {
+    override suspend fun getBookmarkById(id: Int): Bookmark? {
         val bookmarkEntity = bookmarkLocalDataSource.getBookmarkById(id)
         return bookmarkEntity?.let { bookmarkMapper.toBookmark(it) }
     }

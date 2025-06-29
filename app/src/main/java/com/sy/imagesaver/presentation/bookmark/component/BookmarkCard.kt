@@ -91,7 +91,7 @@ fun BookmarkCard(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.Black)
+                    .background(Color.DarkGray)
                     .padding(12.dp)
             ) {
                 Row(

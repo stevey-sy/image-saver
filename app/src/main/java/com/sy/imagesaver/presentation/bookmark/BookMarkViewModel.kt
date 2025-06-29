@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.sy.imagesaver.domain.usecase.GetBookmarkedMediaUseCase
 import com.sy.imagesaver.domain.usecase.DeleteBookmarkUseCase
 import com.sy.imagesaver.presentation.model.BookmarkUiModel
+import com.sy.imagesaver.domain.data.MediaType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,6 +38,10 @@ class BookMarkViewModel @Inject constructor(
     private val _selectedItems = MutableStateFlow<Set<Int>>(emptySet())
     val selectedItems: StateFlow<Set<Int>> = _selectedItems.asStateFlow()
     
+    // 필터 관련 상태
+    private val _selectedFilter = MutableStateFlow<MediaType?>(null)
+    val selectedFilter: StateFlow<MediaType?> = _selectedFilter.asStateFlow()
+    
     // SnackBar 메시지를 위한 이벤트
     private val _snackBarEvent = MutableSharedFlow<SnackBarEvent>()
     val snackBarEvent = _snackBarEvent.asSharedFlow()
@@ -67,7 +72,7 @@ class BookMarkViewModel @Inject constructor(
         }
     }
     
-    private fun loadBookmarkedMediaByType(type: String) {
+    private fun loadBookmarkedMediaByType(type: MediaType) {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
@@ -122,6 +127,27 @@ class BookMarkViewModel @Inject constructor(
     
     fun clearSelection() {
         _selectedItems.value = emptySet()
+    }
+    
+    fun updateFilter(filter: String) {
+        val mediaType = when (filter) {
+            "전체" -> null
+            "이미지" -> MediaType.IMAGE
+            "영상" -> MediaType.VIDEO
+            else -> null
+        }
+        _selectedFilter.value = mediaType
+        
+        when (filter) {
+            "전체" -> loadBookmarkedMedia()
+            "이미지" -> loadBookmarkedMediaByType(MediaType.IMAGE)
+            "영상" -> loadBookmarkedMediaByType(MediaType.VIDEO)
+        }
+    }
+    
+    fun clearFilter() {
+        _selectedFilter.value = null
+        loadBookmarkedMedia()
     }
     
     fun deleteSelectedItems() {

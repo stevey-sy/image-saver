@@ -2,6 +2,7 @@ package com.sy.imagesaver.domain.usecase
 
 import com.sy.imagesaver.data.repository.BookmarkRepository
 import com.sy.imagesaver.domain.data.Bookmark
+import com.sy.imagesaver.domain.data.MediaType
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -10,15 +11,15 @@ class GetBookmarkedMediaUseCase @Inject constructor(
 ) {
     
     fun getAllBookmarkedMedia(): Flow<List<Bookmark>> {
-        return bookmarkRepository.getAllBookmarkedMedia()
+        return bookmarkRepository.getAllBookmarks()
     }
     
-    fun getBookmarkedMediaByType(type: String): Flow<List<Bookmark>> {
-        return bookmarkRepository.getBookmarkedMediaByType(type)
+    fun getBookmarkedMediaByType(type: MediaType): Flow<List<Bookmark>> {
+        return bookmarkRepository.getBookmarksByType(type)
     }
     
     suspend fun getBookmarkedMediaById(id: Int): Bookmark? {
-        return bookmarkRepository.getBookmarkedMediaById(id)
+        return bookmarkRepository.getBookmarkById(id)
     }
     
     suspend fun getBookmarkedMediaCount(): Int {

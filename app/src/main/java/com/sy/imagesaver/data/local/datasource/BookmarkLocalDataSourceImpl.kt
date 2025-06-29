@@ -2,6 +2,7 @@ package com.sy.imagesaver.data.local.datasource
 
 import com.sy.imagesaver.data.local.dao.BookmarkDao
 import com.sy.imagesaver.data.local.entity.BookmarkEntity
+import com.sy.imagesaver.domain.data.MediaType
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -13,7 +14,7 @@ class BookmarkLocalDataSourceImpl @Inject constructor(
         return bookmarkDao.getAllBookmarks()
     }
     
-    override fun getBookmarksByType(type: String): Flow<List<BookmarkEntity>> {
+    override fun getBookmarksByType(type: MediaType): Flow<List<BookmarkEntity>> {
         return bookmarkDao.getBookmarksByType(type)
     }
     

@@ -1,15 +1,16 @@
 package com.sy.imagesaver.data.repository
 
 import com.sy.imagesaver.domain.data.Bookmark
+import com.sy.imagesaver.domain.data.MediaType
 import kotlinx.coroutines.flow.Flow
 
 interface BookmarkRepository {
     
-    fun getAllBookmarkedMedia(): Flow<List<Bookmark>>
+    fun getAllBookmarks(): Flow<List<Bookmark>>
     
-    fun getBookmarkedMediaByType(type: String): Flow<List<Bookmark>>
+    fun getBookmarksByType(type: MediaType): Flow<List<Bookmark>>
     
-    suspend fun getBookmarkedMediaById(id: Int): Bookmark?
+    suspend fun getBookmarkById(id: Int): Bookmark?
     
     suspend fun insertBookmark(media: Bookmark): Long
 
