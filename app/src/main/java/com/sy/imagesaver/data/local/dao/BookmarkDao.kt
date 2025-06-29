@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface BookmarkDao {
     
-    @Query("SELECT * FROM bookmark ORDER BY createdAt DESC")
+    @Query("SELECT * FROM bookmark ORDER BY createdAt ASC")
     fun getAllBookmarks(): Flow<List<BookmarkEntity>>
     
     @Query("SELECT * FROM bookmark WHERE type = :type ORDER BY createdAt DESC")
