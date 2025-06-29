@@ -24,8 +24,8 @@ fun BookMarkScreen(
     viewModel: BookMarkViewModel,
     snackBarManager: SnackBarManager
 ) {
-    // 상태 수집
-    val uiState = collectUiState(viewModel)
+    // ViewModel의 uiState 사용
+    val uiState = viewModel.uiState.collectAsState().value
     
     // SnackBar 이벤트 구독
     LaunchedEffect(Unit) {
@@ -45,7 +45,7 @@ fun BookMarkScreen(
             isDeleteMode = uiState.isDeleteMode,
             selectedItems = uiState.selectedItems,
             bookmarkList = uiState.bookmarkList,
-            viewModel = viewModel
+            viewModel = viewModel,
         )
 
         // 필터 상태 UI
@@ -65,7 +65,7 @@ fun BookMarkScreen(
 
 @Composable
 private fun BookMarkContent(
-    uiState: BookMarkUiState,
+    uiState: BookMarkViewModel.UiState,
     viewModel: BookMarkViewModel
 ) {
     when {
@@ -92,18 +92,6 @@ private fun BookMarkContent(
     }
 }
 
-@Composable
-private fun collectUiState(viewModel: BookMarkViewModel): BookMarkUiState {
-    return BookMarkUiState(
-        bookmarkList = viewModel.bookmarkList.collectAsState().value,
-        isLoading = viewModel.isLoading.collectAsState().value,
-        error = viewModel.error.collectAsState().value,
-        isDeleteMode = viewModel.isDeleteMode.collectAsState().value,
-        selectedItems = viewModel.selectedItems.collectAsState().value,
-        selectedFilter = viewModel.selectedFilter.collectAsState().value
-    )
-}
-
 private suspend fun subscribeToSnackBarEvents(
     viewModel: BookMarkViewModel,
     snackBarManager: SnackBarManager
@@ -119,15 +107,6 @@ private suspend fun subscribeToSnackBarEvents(
         }
     }
 }
-
-private data class BookMarkUiState(
-    val bookmarkList: List<BookmarkUiModel>,
-    val isLoading: Boolean,
-    val error: String?,
-    val isDeleteMode: Boolean,
-    val selectedItems: Set<Int>,
-    val selectedFilter: MediaType?
-)
 
 
 

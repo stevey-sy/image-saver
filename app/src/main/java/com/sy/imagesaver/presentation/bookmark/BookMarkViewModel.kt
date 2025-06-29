@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.combine
 import javax.inject.Inject
 
 @HiltViewModel
@@ -46,8 +47,56 @@ class BookMarkViewModel @Inject constructor(
     private val _snackBarEvent = MutableSharedFlow<SnackBarEvent>()
     val snackBarEvent = _snackBarEvent.asSharedFlow()
     
+    // UI 상태를 하나로 통합
+    private val _uiState = MutableStateFlow(UiState())
+    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+    
     init {
         loadBookmarkedMedia()
+        setupUiStateUpdates()
+    }
+    
+    private fun setupUiStateUpdates() {
+        viewModelScope.launch {
+            // 각 상태 변경을 감지하여 UiState 업데이트
+            _bookmarkedMedia.collect { bookmarkList ->
+                updateUiState { it.copy(bookmarkList = bookmarkList) }
+            }
+        }
+        
+        viewModelScope.launch {
+            _isLoading.collect { isLoading ->
+                updateUiState { it.copy(isLoading = isLoading) }
+            }
+        }
+        
+        viewModelScope.launch {
+            _error.collect { error ->
+                updateUiState { it.copy(error = error) }
+            }
+        }
+        
+        viewModelScope.launch {
+            _isDeleteMode.collect { isDeleteMode ->
+                updateUiState { it.copy(isDeleteMode = isDeleteMode) }
+            }
+        }
+        
+        viewModelScope.launch {
+            _selectedItems.collect { selectedItems ->
+                updateUiState { it.copy(selectedItems = selectedItems) }
+            }
+        }
+        
+        viewModelScope.launch {
+            _selectedFilter.collect { selectedFilter ->
+                updateUiState { it.copy(selectedFilter = selectedFilter) }
+            }
+        }
+    }
+    
+    private fun updateUiState(update: (UiState) -> UiState) {
+        _uiState.value = update(_uiState.value)
     }
     
     private fun loadBookmarkedMedia() {
@@ -194,5 +243,14 @@ class BookMarkViewModel @Inject constructor(
         data class Success(val message: String) : SnackBarEvent()
         data class Error(val message: String) : SnackBarEvent()
     }
+    
+    data class UiState(
+        val bookmarkList: List<BookmarkUiModel> = emptyList(),
+        val isLoading: Boolean = false,
+        val error: String? = null,
+        val isDeleteMode: Boolean = false,
+        val selectedItems: Set<Int> = emptySet(),
+        val selectedFilter: MediaType? = null
+    )
 }
 
