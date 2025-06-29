@@ -33,4 +33,12 @@ object UtilModule {
     ): NetworkUtil {
         return NetworkUtil(context)
     }
+    
+    @Provides
+    @Singleton
+    fun provideBookmarkManager(
+        bookmarkRepository: BookmarkRepository
+    ): BookmarkManager {
+        return BookmarkManager(bookmarkRepository)
+    }
 }

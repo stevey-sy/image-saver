@@ -6,6 +6,7 @@ import com.sy.imagesaver.domain.usecase.GetBookmarkedMediaUseCase
 import com.sy.imagesaver.domain.usecase.DeleteBookmarkUseCase
 import com.sy.imagesaver.presentation.model.BookmarkUiModel
 import com.sy.imagesaver.domain.data.MediaType
+import com.sy.imagesaver.di.BookmarkManager
 import com.sy.imagesaver.presentation.search.SearchViewModel.SnackBarEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +22,8 @@ import javax.inject.Inject
 @HiltViewModel
 class BookMarkViewModel @Inject constructor(
     private val getBookmarkedMediaUseCase: GetBookmarkedMediaUseCase,
-    private val deleteBookmarkUseCase: DeleteBookmarkUseCase
+    private val deleteBookmarkUseCase: DeleteBookmarkUseCase,
+    private val bookmarkManager: BookmarkManager
 ) : ViewModel() {
     
     private val _bookmarkedMedia = MutableStateFlow<List<BookmarkUiModel>>(emptyList())
@@ -246,9 +248,18 @@ class BookMarkViewModel @Inject constructor(
                 
                 val selectedIds = _selectedItems.value
                 if (selectedIds.isNotEmpty()) {
+                    // 선택된 아이템들의 thumbnailUrl을 저장
+                    val selectedBookmarks = _bookmarkedMedia.value.filter { it.id in selectedIds }
+                    val thumbnailUrlsToRemove = selectedBookmarks.map { it.thumbnailUrl }
+                    
                     // 선택된 아이템들을 삭제
                     selectedIds.forEach { itemId ->
                         deleteBookmarkUseCase(itemId)
+                    }
+                    
+                    // BookmarkManager에서 해당 thumbnailUrl들 제거
+                    thumbnailUrlsToRemove.forEach { thumbnailUrl ->
+                        bookmarkManager.removeBookmark(thumbnailUrl)
                     }
                     
                     // 삭제 후 목록 새로고침

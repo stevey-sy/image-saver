@@ -62,7 +62,9 @@ fun BookmarkCard(
                     modifier = Modifier
                         .fillMaxSize()
                         .clickable { 
-                            if (!isDeleteMode) {
+                            if (isDeleteMode) {
+                                onSelectionChanged()
+                            } else {
                                 when (bookmark.type) {
                                     "이미지" -> onImageClick()
                                     "비디오" -> onVideoClick()
