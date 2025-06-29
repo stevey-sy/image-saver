@@ -1,17 +1,21 @@
 package com.sy.imagesaver.presentation.search
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.sy.imagesaver.R
 import com.sy.imagesaver.data.mapper.MediaUiModelMapper
 import com.sy.imagesaver.domain.usecase.SearchMediaUseCase
 import com.sy.imagesaver.domain.usecase.AddBookmarkUseCase
 import com.sy.imagesaver.presentation.model.SearchResultUiModel
 import com.sy.imagesaver.data.repository.SearchRepository
 import com.sy.imagesaver.data.repository.BookmarkRepository
+import com.sy.imagesaver.di.BookmarkManager
 import com.sy.imagesaver.util.NetworkUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,9 +34,10 @@ class SearchViewModel @Inject constructor(
     private val searchMediaUseCase: SearchMediaUseCase,
     private val addBookmarkUseCase: AddBookmarkUseCase,
     private val searchRepository: SearchRepository,
-    private val bookmarkRepository: BookmarkRepository,
+    private val bookmarkManager: BookmarkManager,
     private val mediaUiModelMapper: MediaUiModelMapper,
-    private val networkUtil: NetworkUtil
+    private val networkUtil: NetworkUtil,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
     
     private val _searchQuery = MutableStateFlow("")
@@ -49,9 +54,8 @@ class SearchViewModel @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
     
-    // 북마크된 아이템의 thumbnailUrl을 추적
-    private val _bookmarkedThumbnailUrls = MutableStateFlow<Set<String>>(emptySet())
-    val bookmarkedThumbnailUrls: StateFlow<Set<String>> = _bookmarkedThumbnailUrls.asStateFlow()
+    // 북마크된 아이템의 thumbnailUrl을 추적 (BookmarkManager에서 가져옴)
+    val bookmarkedThumbnailUrls: StateFlow<Set<String>> = bookmarkManager.bookmarkedThumbnailUrls
     
     // SnackBar 메시지를 위한 이벤트
     private val _snackBarEvent = MutableSharedFlow<SnackBarEvent>()
@@ -98,8 +102,7 @@ class SearchViewModel @Inject constructor(
     private fun loadBookmarkedItems() {
         viewModelScope.launch {
             try {
-                val bookmarkedUrls = bookmarkRepository.getBookmarkThumbnailUrls()
-                _bookmarkedThumbnailUrls.value = bookmarkedUrls.toSet()
+                bookmarkManager.loadBookmarkedItems()
             } catch (e: Exception) {
                 // 에러 처리 (선택사항)
             }
@@ -163,18 +166,18 @@ class SearchViewModel @Inject constructor(
                 
                 val id = addBookmarkUseCase(media)
                 
-                // 저장 성공 시 해당 아이템을 북마크 목록에 추가
-                _bookmarkedThumbnailUrls.value = _bookmarkedThumbnailUrls.value + searchResultUiModel.thumbnailUrl
+                // BookmarkManager를 통해 북마크 상태 업데이트
+                bookmarkManager.addBookmark(searchResultUiModel.thumbnailUrl)
                 
                 // SnackBar 이벤트 발생
                 _snackBarEvent.emit(
-                    SnackBarEvent.Success("보관함에 저장되었습니다.")
+                    SnackBarEvent.Success(context.getString(R.string.bookmark_save_success))
                 )
                 
             } catch (e: Exception) {
                 // SnackBar 이벤트 발생
                 _snackBarEvent.emit(
-                    SnackBarEvent.Error("저장에 실패했습니다: ${e.message}")
+                    SnackBarEvent.Error(context.getString(R.string.bookmark_save_failed, e.message))
                 )
             }
         }
@@ -189,16 +192,16 @@ class SearchViewModel @Inject constructor(
     fun handleLoadStateError(error: Throwable) {
         val errorMessage = when {
             !isNetworkAvailable() ->
-                "네트워크 연결을 확인해주세요."
+                context.getString(R.string.network_error)
             error.message?.contains("Unable to resolve host") == true ->
-                "네트워크 연결을 확인해주세요."
+                context.getString(R.string.network_error)
             error.message?.contains("timeout") == true ->
-                "요청 시간이 초과되었습니다."
+                context.getString(R.string.timeout_error)
             error.message?.contains("500") == true ->
-                "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
+                context.getString(R.string.server_error)
             error.message?.contains("404") == true ->
-                "요청한 리소스를 찾을 수 없습니다."
-            else -> "검색 중 오류가 발생했습니다: ${error.message}"
+                context.getString(R.string.not_found_error)
+            else -> context.getString(R.string.search_error, error.message)
         }
         setError(errorMessage)
     }
@@ -229,7 +232,7 @@ class SearchViewModel @Inject constructor(
         }
         
         viewModelScope.launch {
-            _bookmarkedThumbnailUrls.collect { bookmarkedThumbnailUrls ->
+            bookmarkManager.bookmarkedThumbnailUrls.collect { bookmarkedThumbnailUrls ->
                 updateUiState { it.copy(bookmarkedThumbnailUrls = bookmarkedThumbnailUrls) }
             }
         }
