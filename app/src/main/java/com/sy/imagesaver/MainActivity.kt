@@ -14,6 +14,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -39,6 +40,7 @@ import com.sy.imagesaver.presentation.navigation.NavGraph
 import com.sy.imagesaver.presentation.navigation.Screen
 import com.sy.imagesaver.presentation.theme.AppIcons
 import com.sy.imagesaver.presentation.theme.ImageSaverTheme
+import com.sy.imagesaver.presentation.theme.Orange
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.compose.material3.SnackbarDefaults
 import androidx.compose.material3.SnackbarVisuals
@@ -132,7 +134,14 @@ fun MainScreen() {
                 ).forEach { (screen, icon) ->
                     NavigationBarItem(
                         icon = { Icon(icon, contentDescription = screen.route) },
-                        label = { Text(screen.route.capitalize()) },
+                        label = { 
+                            Text(
+                                when (screen) {
+                                    Screen.Bookmark -> "나의 보관함"
+                                    Screen.Search -> "검색"
+                                }
+                            ) 
+                        },
                         selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                         onClick = {
                             navController.navigate(screen.route) {
@@ -142,7 +151,12 @@ fun MainScreen() {
                                 launchSingleTop = true
                                 restoreState = true
                             }
-                        }
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = Orange,
+                            selectedTextColor = Orange,
+                            indicatorColor = Orange.copy(alpha = 0.2f)
+                        )
                     )
                 }
             }
