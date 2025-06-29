@@ -35,7 +35,7 @@ import com.sy.imagesaver.presentation.theme.AppIcons
 
 @Composable
 fun BookMarkScreen(
-    viewModel: BookMarkViewModel = hiltViewModel()
+    viewModel: BookMarkViewModel
 ) {
     val bookmarkedMedia by viewModel.bookmarkedMedia.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()

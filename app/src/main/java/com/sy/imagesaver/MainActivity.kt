@@ -165,6 +165,7 @@ fun MainScreen() {
         NavGraph(
             navController = navController,
             snackBarManager = snackBarManager,
+            bookMarkViewModel = bookMarkViewModel,
             modifier = Modifier.padding(innerPadding)
         )
     }

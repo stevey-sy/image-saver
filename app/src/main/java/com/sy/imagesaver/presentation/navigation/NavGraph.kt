@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.sy.imagesaver.presentation.bookmark.BookMarkScreen
+import com.sy.imagesaver.presentation.bookmark.BookMarkViewModel
 import com.sy.imagesaver.presentation.search.SearchScreen
 import com.sy.imagesaver.presentation.manager.SnackBarManager
 
@@ -18,6 +19,7 @@ sealed class Screen(val route: String) {
 fun NavGraph(
     navController: NavHostController,
     snackBarManager: SnackBarManager,
+    bookMarkViewModel: BookMarkViewModel,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -26,7 +28,7 @@ fun NavGraph(
         modifier = modifier
     ) {
         composable(Screen.Bookmark.route) {
-            BookMarkScreen()
+            BookMarkScreen(viewModel = bookMarkViewModel)
         }
         composable(Screen.Search.route) {
             SearchScreen(snackBarManager = snackBarManager)
