@@ -9,20 +9,11 @@ import javax.inject.Inject
 class GetBookmarkedMediaUseCase @Inject constructor(
     private val bookmarkRepository: BookmarkRepository
 ) {
-    
     fun getAllBookmarkedMedia(): Flow<List<Bookmark>> {
         return bookmarkRepository.getAllBookmarks()
     }
     
     fun getBookmarkedMediaByType(type: MediaType): Flow<List<Bookmark>> {
         return bookmarkRepository.getBookmarksByType(type)
-    }
-    
-    suspend fun getBookmarkedMediaById(id: Int): Bookmark? {
-        return bookmarkRepository.getBookmarkById(id)
-    }
-    
-    suspend fun getBookmarkedMediaCount(): Int {
-        return bookmarkRepository.getBookmarkCount()
     }
 } 

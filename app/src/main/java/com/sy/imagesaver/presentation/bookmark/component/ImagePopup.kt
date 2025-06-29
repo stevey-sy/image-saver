@@ -22,8 +22,6 @@ import androidx.compose.ui.window.DialogProperties
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import kotlin.math.max
-import kotlin.math.min
 
 @Composable
 fun ImagePopup(
