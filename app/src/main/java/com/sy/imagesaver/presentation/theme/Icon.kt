@@ -27,5 +27,13 @@ object AppIcons {
     val BookmarkFilled: Painter
         @Composable
         get() = painterResource(id = R.drawable.ic_bookmark_filled)
+
+    val Filter: Painter
+        @Composable
+        get() = painterResource(id = R.drawable.ic_filter)
+
+    val Trash: Painter
+        @Composable
+        get() = painterResource(id = R.drawable.ic_trash)
 }
 
