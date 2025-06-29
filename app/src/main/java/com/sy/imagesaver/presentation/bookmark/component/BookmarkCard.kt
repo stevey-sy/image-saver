@@ -20,6 +20,7 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.sy.imagesaver.presentation.model.BookmarkUiModel
 import com.sy.imagesaver.presentation.theme.AppIcons
+import com.sy.imagesaver.presentation.theme.Orange
 
 @Composable
 fun BookmarkCard(
@@ -65,11 +66,11 @@ fun BookmarkCard(
                 if (isDeleteMode) {
                     Box(
                         modifier = Modifier
-                            .align(Alignment.TopStart)
+                            .align(Alignment.TopEnd)
                             .padding(8.dp)
                             .size(24.dp)
                             .background(
-                                color = if (isSelected) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.8f),
+                                color = if (isSelected) Orange else Color.White.copy(alpha = 0.8f),
                                 shape = RoundedCornerShape(4.dp)
                             ),
                         contentAlignment = Alignment.Center
@@ -78,7 +79,7 @@ fun BookmarkCard(
                             Icon(
                                 imageVector = Icons.Default.Check,
                                 contentDescription = "선택됨",
-                                tint = Color.White,
+                                tint = Color.Black,
                                 modifier = Modifier.size(16.dp)
                             )
                         }

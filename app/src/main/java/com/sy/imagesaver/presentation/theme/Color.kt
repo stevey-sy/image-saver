@@ -12,3 +12,6 @@ val Pink40 = Color(0xFF7D5260)
 
 // 테마 속성용 색상
 val ColorControlNormal = Color(0xFF000000)
+
+val Orange = Color(0xFFFFA500)
+val Purple = Color(0xFF6650a4)

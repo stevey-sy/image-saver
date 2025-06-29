@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -34,6 +36,10 @@ class BookMarkViewModel @Inject constructor(
     
     private val _selectedItems = MutableStateFlow<Set<Int>>(emptySet())
     val selectedItems: StateFlow<Set<Int>> = _selectedItems.asStateFlow()
+    
+    // SnackBar 메시지를 위한 이벤트
+    private val _snackBarEvent = MutableSharedFlow<SnackBarEvent>()
+    val snackBarEvent = _snackBarEvent.asSharedFlow()
     
     init {
         loadBookmarkedMedia()
@@ -137,6 +143,11 @@ class BookMarkViewModel @Inject constructor(
                     // 삭제 모드 종료
                     _isDeleteMode.value = false
                     _selectedItems.value = emptySet()
+                    
+                    // SnackBar 이벤트 발생
+                    _snackBarEvent.emit(
+                        SnackBarEvent.Success("${selectedIds.size}개의 아이템이 삭제되었습니다.")
+                    )
                 }
                 
                 _isLoading.value = false
@@ -144,8 +155,18 @@ class BookMarkViewModel @Inject constructor(
             } catch (e: Exception) {
                 _error.value = "선택된 미디어 삭제에 실패했습니다: ${e.message}"
                 _isLoading.value = false
+                
+                // SnackBar 이벤트 발생
+                _snackBarEvent.emit(
+                    SnackBarEvent.Error("삭제에 실패했습니다: ${e.message}")
+                )
             }
         }
+    }
+    
+    sealed class SnackBarEvent {
+        data class Success(val message: String) : SnackBarEvent()
+        data class Error(val message: String) : SnackBarEvent()
     }
 }
 

@@ -28,7 +28,10 @@ fun NavGraph(
         modifier = modifier
     ) {
         composable(Screen.Bookmark.route) {
-            BookMarkScreen(viewModel = bookMarkViewModel)
+            BookMarkScreen(
+                viewModel = bookMarkViewModel,
+                snackBarManager = snackBarManager
+            )
         }
         composable(Screen.Search.route) {
             SearchScreen(snackBarManager = snackBarManager)

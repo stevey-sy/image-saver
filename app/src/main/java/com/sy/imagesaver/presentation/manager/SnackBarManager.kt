@@ -4,6 +4,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
+import com.sy.imagesaver.presentation.theme.Orange
+import com.sy.imagesaver.presentation.theme.Purple
 import kotlinx.coroutines.CoroutineScope
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -25,11 +27,11 @@ class SnackBarManager @Inject constructor() {
     }
     
     fun showSuccessSnackbar(message: String, duration: SnackbarDuration = SnackbarDuration.Short) {
-        showSnackbarWithColor?.invoke(message, Color.Green) // 초록색
+        showSnackbarWithColor?.invoke(message, Orange) // 초록색
     }
     
     fun showErrorSnackbar(message: String, duration: SnackbarDuration = SnackbarDuration.Long) {
-        showSnackbarWithColor?.invoke(message, Color.Red)
+        showSnackbarWithColor?.invoke(message, Purple)
     }
     
     enum class SnackbarDuration {
