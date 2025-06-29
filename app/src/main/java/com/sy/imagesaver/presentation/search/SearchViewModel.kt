@@ -6,9 +6,10 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.sy.imagesaver.data.mapper.MediaUiModelMapper
 import com.sy.imagesaver.domain.usecase.SearchMediaUseCase
-import com.sy.imagesaver.domain.usecase.SaveMediaUseCase
-import com.sy.imagesaver.presentation.model.MediaUiModel
-import com.sy.imagesaver.data.repository.MediaRepository
+import com.sy.imagesaver.domain.usecase.AddBookmarkUseCase
+import com.sy.imagesaver.presentation.model.SearchResultUiModel
+import com.sy.imagesaver.data.repository.SearchRepository
+import com.sy.imagesaver.data.repository.BookmarkRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,8 +23,9 @@ import kotlinx.coroutines.flow.asSharedFlow
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val searchMediaUseCase: SearchMediaUseCase,
-    private val saveMediaUseCase: SaveMediaUseCase,
-    private val mediaRepository: MediaRepository,
+    private val addBookmarkUseCase: AddBookmarkUseCase,
+    private val searchRepository: SearchRepository,
+    private val bookmarkRepository: BookmarkRepository,
     private val mediaUiModelMapper: MediaUiModelMapper
 ) : ViewModel() {
     
@@ -49,7 +51,7 @@ class SearchViewModel @Inject constructor(
     private fun loadBookmarkedItems() {
         viewModelScope.launch {
             try {
-                val bookmarkedUrls = mediaRepository.getBookmarkedThumbnailUrls()
+                val bookmarkedUrls = bookmarkRepository.getBookmarkThumbnailUrls()
                 _bookmarkedThumbnailUrls.value = bookmarkedUrls.toSet()
             } catch (e: Exception) {
                 // 에러 처리 (선택사항)
@@ -66,12 +68,7 @@ class SearchViewModel @Inject constructor(
         _error.value = null
     }
     
-    fun searchMedia(query: String) {
-        // PagingData는 Composable에서 Flow로 직접 구독하므로 별도 구현 필요 없음
-        _error.value = null
-    }
-    
-    fun getSearchResultFlow(query: String): Flow<PagingData<MediaUiModel>> {
+    fun getSearchResultFlow(query: String): Flow<PagingData<SearchResultUiModel>> {
         return if (query.isNotBlank()) {
             searchMediaUseCase.searchMediaPaged(query).cachedIn(viewModelScope)
         } else {
@@ -79,41 +76,34 @@ class SearchViewModel @Inject constructor(
         }
     }
     
-    fun refreshSearch() {
-        val query = _searchQuery.value
-        if (query.isNotBlank()) {
-            searchMedia(query)
-        }
-    }
-    
     fun clearSearchCache() {
         viewModelScope.launch {
-            mediaRepository.clearSearchCache()
+            searchRepository.clearSearchCache()
         }
     }
     
     fun getCacheInfo() {
         viewModelScope.launch {
-            val cacheInfo = mediaRepository.getCacheInfo()
+            val cacheInfo = searchRepository.getCacheInfo()
             // 디버그용 로그 출력
             println("Cache Info: $cacheInfo")
         }
     }
     
-    fun saveMedia(mediaUiModel: MediaUiModel) {
+    fun saveMedia(searchResultUiModel: SearchResultUiModel) {
         viewModelScope.launch {
             try {
                 // MediaUiModel을 Media로 변환
-                val media = mediaUiModelMapper.toMedia(mediaUiModel)
+                val media = mediaUiModelMapper.toMedia(searchResultUiModel)
                 
-                val id = saveMediaUseCase(media)
+                val id = addBookmarkUseCase(media)
                 
                 // 저장 성공 시 해당 아이템을 북마크 목록에 추가
-                _bookmarkedThumbnailUrls.value = _bookmarkedThumbnailUrls.value + mediaUiModel.thumbnailUrl
+                _bookmarkedThumbnailUrls.value = _bookmarkedThumbnailUrls.value + searchResultUiModel.thumbnailUrl
                 
                 // SnackBar 이벤트 발생
                 _snackBarEvent.emit(
-                    SnackBarEvent.Success("미디어가 저장되었습니다.")
+                    SnackBarEvent.Success("보관함에 저장되었습니다.")
                 )
                 
             } catch (e: Exception) {

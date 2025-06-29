@@ -2,7 +2,7 @@ package com.sy.imagesaver.data.mapper
 
 import com.sy.imagesaver.data.local.entity.BookmarkEntity
 import com.sy.imagesaver.domain.data.MediaType
-import com.sy.imagesaver.presentation.model.MediaUiModel
+import com.sy.imagesaver.presentation.model.SearchResultUiModel
 import com.sy.imagesaver.util.formatYmdHm
 import com.sy.imagesaver.util.toInstant
 import com.sy.imagesaver.util.toSeoulLocalDateTime
@@ -12,15 +12,15 @@ import javax.inject.Inject
 class BookmarkEntityMapper @Inject constructor() {
     
     @OptIn(ExperimentalTime::class)
-    fun toMediaUiModel(bookmarkEntity: BookmarkEntity): MediaUiModel {
+    fun toMediaUiModel(bookmarkEntity: BookmarkEntity): SearchResultUiModel {
         return when (bookmarkEntity.type) {
-            MediaType.IMAGE -> MediaUiModel.Image(
+            MediaType.IMAGE -> SearchResultUiModel.Image(
                 id = bookmarkEntity.id.toString(),
                 thumbnailUrl = bookmarkEntity.thumbnailUrl,
                 originalUrl = bookmarkEntity.originalUrl,
                 datetime = bookmarkEntity.datetime.toInstant().toSeoulLocalDateTime().formatYmdHm()
             )
-            MediaType.VIDEO -> MediaUiModel.Video(
+            MediaType.VIDEO -> SearchResultUiModel.Video(
                 id = bookmarkEntity.id.toString(),
                 thumbnailUrl = bookmarkEntity.thumbnailUrl,
                 originalUrl = bookmarkEntity.originalUrl,
@@ -31,7 +31,7 @@ class BookmarkEntityMapper @Inject constructor() {
         }
     }
     
-    fun toMediaUiModelList(bookmarkEntities: List<BookmarkEntity>): List<MediaUiModel> {
+    fun toMediaUiModelList(bookmarkEntities: List<BookmarkEntity>): List<SearchResultUiModel> {
         return bookmarkEntities.map { toMediaUiModel(it) }
     }
 } 

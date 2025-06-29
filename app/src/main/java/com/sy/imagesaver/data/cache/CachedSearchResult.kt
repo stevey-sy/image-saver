@@ -1,7 +1,6 @@
 package com.sy.imagesaver.data.cache
 
-import androidx.paging.PagingData
-import com.sy.imagesaver.presentation.model.MediaUiModel
+import com.sy.imagesaver.presentation.model.SearchResultUiModel
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -9,7 +8,7 @@ import kotlin.time.Instant
 
 data class CachedSearchResult @OptIn(ExperimentalTime::class) constructor(
     val query: String,
-    val mediaList: List<MediaUiModel> = emptyList(),
+    val mediaList: List<SearchResultUiModel> = emptyList(),
     val cachedAt: Instant = Clock.System.now()
 ) {
     companion object {

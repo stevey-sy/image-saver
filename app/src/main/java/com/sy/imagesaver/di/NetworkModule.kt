@@ -83,6 +83,6 @@ interface NetworkModuleBinds {
     @Binds
     @Singleton
     fun bindMediaRepository(
-        mediaRepositoryImpl: com.sy.imagesaver.data.repository.MediaRepositoryImpl
-    ): com.sy.imagesaver.data.repository.MediaRepository
+        mediaRepositoryImpl: com.sy.imagesaver.data.repository.SearchRepositoryImpl
+    ): com.sy.imagesaver.data.repository.SearchRepository
 } 

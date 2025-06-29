@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -18,6 +19,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,6 +37,7 @@ import androidx.navigation.compose.rememberNavController
 import com.sy.imagesaver.presentation.manager.rememberSnackBarManager
 import com.sy.imagesaver.presentation.navigation.NavGraph
 import com.sy.imagesaver.presentation.navigation.Screen
+import com.sy.imagesaver.presentation.theme.AppIcons
 import com.sy.imagesaver.presentation.theme.ImageSaverTheme
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.compose.material3.SnackbarDefaults
@@ -43,6 +46,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.material3.Snackbar
 import kotlinx.coroutines.launch
+import com.sy.imagesaver.presentation.bookmark.BookMarkViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -65,6 +70,7 @@ fun MainScreen() {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     val snackBarManager = rememberSnackBarManager()
+    val bookMarkViewModel: BookMarkViewModel = hiltViewModel()
     
     // SnackBar 색상 상태
     var snackbarColor by remember { mutableStateOf(Color(0xFF4CAF50)) } // 기본 초록색
@@ -97,6 +103,21 @@ fun MainScreen() {
             TopAppBar(
                 title = {
                     Text(text = stringResource(id = R.string.app_name))
+                },
+                actions = {
+                    // 현재 화면이 BookmarkScreen일 때만 아이콘들 표시
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    val currentDestination = navBackStackEntry?.destination
+                    val isBookmarkScreen = currentDestination?.hierarchy?.any { it.route == Screen.Bookmark.route } == true
+                    
+                    if (isBookmarkScreen) {
+                        IconButton(onClick = { /* Handle filter icon click */ }) {
+                            Icon(AppIcons.Filter, contentDescription = "Filter")
+                        }
+                        IconButton(onClick = { bookMarkViewModel.toggleDeleteMode() }) {
+                            Icon(AppIcons.Trash, contentDescription = "Trash")
+                        }
+                    }
                 }
             )
         },

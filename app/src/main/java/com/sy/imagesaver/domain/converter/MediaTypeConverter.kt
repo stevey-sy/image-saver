@@ -1,7 +1,7 @@
-package com.sy.imagesaver.data.local.converter
+package com.sy.imagesaver.domain.converter
 
 import androidx.room.TypeConverter
-import com.sy.imagesaver.data.local.entity.MediaType
+import com.sy.imagesaver.domain.data.MediaType
 
 class MediaTypeConverter {
     

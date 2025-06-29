@@ -2,7 +2,7 @@ package com.sy.imagesaver.data.mapper
 
 import com.sy.imagesaver.data.remote.dto.ImageDto
 import com.sy.imagesaver.data.remote.dto.VideoDto
-import com.sy.imagesaver.domain.data.Media
+import com.sy.imagesaver.domain.data.SearchResult
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 import java.security.MessageDigest
@@ -10,11 +10,11 @@ import javax.inject.Inject
 
 class MediaDtoMapper @Inject constructor() {
     @OptIn(ExperimentalTime::class)
-    fun fromImageDto(dto: ImageDto): Media {
+    fun fromImageDto(dto: ImageDto): SearchResult {
         // 안정적인 unique id 생성: thumbnailUrl + datetime 조합
         val uniqueId = "${dto.thumbnailUrl}_${dto.datetime}"
         
-        return Media.Image(
+        return SearchResult.Image(
             id = uniqueId,
             thumbnailUrl = dto.thumbnailUrl,
             originalUrl = dto.imageUrl,
@@ -23,12 +23,12 @@ class MediaDtoMapper @Inject constructor() {
     }
 
     @OptIn(ExperimentalTime::class)
-    fun fromVideoDto(dto: VideoDto): Media {
+    fun fromVideoDto(dto: VideoDto): SearchResult {
         // 안정적인 unique id 생성: thumbnail + datetime 조합
 //        val uniqueId = generateStableId("${dto.thumbnail}_${dto.datetime}")
         val uniqueId = "${dto.thumbnail}_${dto.datetime}"
         
-        return Media.Video(
+        return SearchResult.Video(
             id = uniqueId,
             thumbnailUrl = dto.thumbnail,
             originalUrl = dto.url,

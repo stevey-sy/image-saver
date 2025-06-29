@@ -1,12 +1,9 @@
 package com.sy.imagesaver.presentation.search
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -18,28 +15,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemKey
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
-import coil3.request.crossfade
-import com.sy.imagesaver.presentation.model.MediaUiModel
-import com.sy.imagesaver.presentation.theme.AppIcons
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import com.sy.imagesaver.presentation.manager.SnackBarManager
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import kotlinx.coroutines.delay
-import com.sy.imagesaver.presentation.common.MediaCard
+import com.sy.imagesaver.presentation.search.component.SearchResultCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -126,7 +112,7 @@ fun SearchScreen(
                             key = lazyPagingItems.itemKey { it.id }
                         ) { index ->
                             lazyPagingItems[index]?.let { mediaItem ->
-                                MediaCard(
+                                SearchResultCard(
                                     media = mediaItem,
                                     isBookmarked = bookmarkedThumbnailUrls.contains(mediaItem.thumbnailUrl),
                                     showBookmarkIcon = true,

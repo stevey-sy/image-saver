@@ -4,7 +4,7 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
 @OptIn(ExperimentalTime::class)
-sealed class Media {
+sealed class SearchResult {
     abstract val id: String
     abstract val thumbnailUrl: String
     abstract val originalUrl: String
@@ -15,7 +15,7 @@ sealed class Media {
         override val thumbnailUrl: String,
         override val originalUrl: String,
         override val datetime: Instant
-    ) : Media()
+    ) : SearchResult()
 
     data class Video(
         override val id: String,
@@ -24,5 +24,5 @@ sealed class Media {
         override val datetime: Instant,
         val title: String,
         val playTime: Int
-    ) : Media()
+    ) : SearchResult()
 }

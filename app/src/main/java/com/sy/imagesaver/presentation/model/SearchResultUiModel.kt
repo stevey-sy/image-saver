@@ -1,18 +1,13 @@
 package com.sy.imagesaver.presentation.model
 
-import com.sy.imagesaver.domain.data.Media
+import com.sy.imagesaver.domain.data.SearchResult
 import com.sy.imagesaver.util.formatYmdHm
 import com.sy.imagesaver.util.toSeoulLocalDateTime
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
-import java.time.ZoneId
 import kotlin.time.ExperimentalTime
-import java.time.format.DateTimeFormatter
 import kotlin.time.Instant
 
 @OptIn(ExperimentalTime::class)
-sealed class MediaUiModel {
+sealed class SearchResultUiModel {
     abstract val id: String
     abstract val thumbnailUrl: String
     abstract val originalUrl: String
@@ -25,7 +20,7 @@ sealed class MediaUiModel {
         override val originalUrl: String,
         override val datetime: String,
         override val isBookmarked: Boolean = false
-    ) : MediaUiModel()
+    ) : SearchResultUiModel()
 
     data class Video(
         override val id: String,
@@ -35,27 +30,27 @@ sealed class MediaUiModel {
         val title: String,
         val playTime: Int,
         override val isBookmarked: Boolean = false
-    ) : MediaUiModel()
+    ) : SearchResultUiModel()
 
     companion object {
-        fun fromMedia(media: Media, isBookmarked: Boolean = false): MediaUiModel {
-            val formattedDateTime = formatDateTime(media.datetime)
+        fun fromMedia(searchResult: SearchResult, isBookmarked: Boolean = false): SearchResultUiModel {
+            val formattedDateTime = formatDateTime(searchResult.datetime)
             
-            return when (media) {
-                is Media.Image -> Image(
-                    id = media.id,
-                    thumbnailUrl = media.thumbnailUrl,
-                    originalUrl = media.originalUrl,
+            return when (searchResult) {
+                is SearchResult.Image -> Image(
+                    id = searchResult.id,
+                    thumbnailUrl = searchResult.thumbnailUrl,
+                    originalUrl = searchResult.originalUrl,
                     datetime = formattedDateTime,
                     isBookmarked = isBookmarked
                 )
-                is Media.Video -> Video(
-                    id = media.id,
-                    thumbnailUrl = media.thumbnailUrl,
-                    originalUrl = media.originalUrl,
+                is SearchResult.Video -> Video(
+                    id = searchResult.id,
+                    thumbnailUrl = searchResult.thumbnailUrl,
+                    originalUrl = searchResult.originalUrl,
                     datetime = formattedDateTime,
-                    title = media.title,
-                    playTime = media.playTime,
+                    title = searchResult.title,
+                    playTime = searchResult.playTime,
                     isBookmarked = isBookmarked
                 )
             }

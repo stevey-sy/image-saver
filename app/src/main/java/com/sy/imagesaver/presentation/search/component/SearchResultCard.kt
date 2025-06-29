@@ -1,4 +1,4 @@
-package com.sy.imagesaver.presentation.common
+package com.sy.imagesaver.presentation.search.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -8,8 +8,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -18,21 +16,23 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
-import com.sy.imagesaver.presentation.model.MediaUiModel
+import com.sy.imagesaver.presentation.model.SearchResultUiModel
 import com.sy.imagesaver.presentation.theme.AppIcons
 
 @Composable
-fun MediaCard(
-    media: MediaUiModel,
+fun SearchResultCard(
+    media: SearchResultUiModel,
     modifier: Modifier = Modifier,
     isBookmarked: Boolean = false,
     showBookmarkIcon: Boolean = true,
-    onItemClick: () -> Unit = {}
+    onItemClick: () -> Unit = {},
 ) {
     Card(
         modifier = modifier
             .height(200.dp)
-            .clickable { onItemClick() },
+            .clickable {
+                onItemClick()
+            },
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
@@ -53,7 +53,6 @@ fun MediaCard(
                         .fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
-                
                 // 북마크된 경우 우측 상단에 체크 아이콘 표시 (showBookmarkIcon이 true이고 isBookmarked가 true일 때만)
                 if (showBookmarkIcon && isBookmarked) {
                     Box(
@@ -85,7 +84,7 @@ fun MediaCard(
                     .padding(12.dp)
             ) {
                 when (media) {
-                    is MediaUiModel.Image -> {
+                    is SearchResultUiModel.Image -> {
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -105,7 +104,7 @@ fun MediaCard(
                             )
                         }
                     }
-                    is MediaUiModel.Video -> {
+                    is SearchResultUiModel.Video -> {
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {

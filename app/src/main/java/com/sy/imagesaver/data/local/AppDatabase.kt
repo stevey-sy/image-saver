@@ -6,7 +6,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import android.content.Context
 import com.sy.imagesaver.data.local.dao.BookmarkDao
-import com.sy.imagesaver.data.local.converter.MediaTypeConverter
+import com.sy.imagesaver.domain.converter.MediaTypeConverter
 import com.sy.imagesaver.data.local.entity.BookmarkEntity
 
 @Database(
