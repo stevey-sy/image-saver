@@ -37,11 +37,6 @@ class BookmarkRepositoryImpl @Inject constructor(
         return bookmarkLocalDataSource.insertBookmark(bookmarkEntity)
     }
     
-    override suspend fun updateBookmark(media: Bookmark) {
-        val bookmarkEntity = bookmarkMapper.toBookmarkEntity(media)
-        bookmarkLocalDataSource.updateBookmark(bookmarkEntity)
-    }
-    
     override suspend fun deleteBookmark(media: Bookmark) {
         val bookmarkEntity = bookmarkMapper.toBookmarkEntity(media)
         bookmarkLocalDataSource.deleteBookmark(bookmarkEntity)

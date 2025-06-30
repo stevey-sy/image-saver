@@ -19,16 +19,6 @@ class BookmarkManager @Inject constructor(
         _bookmarkedThumbnailUrls.value = urls.toSet()
     }
 
-    fun updateBookmark(thumbnailUrl: String, isBookmarked: Boolean) {
-        val current = _bookmarkedThumbnailUrls.value.toMutableSet()
-        if (isBookmarked) {
-            current.add(thumbnailUrl)
-        } else {
-            current.remove(thumbnailUrl)
-        }
-        _bookmarkedThumbnailUrls.value = current
-    }
-
     fun removeBookmark(thumbnailUrl: String) {
         val current = _bookmarkedThumbnailUrls.value.toMutableSet()
         current.remove(thumbnailUrl)

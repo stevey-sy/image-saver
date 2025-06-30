@@ -13,8 +13,6 @@ interface BookmarkLocalDataSource {
     suspend fun getBookmarkById(id: Int): BookmarkEntity?
     
     suspend fun insertBookmark(bookmark: BookmarkEntity): Long
-
-    suspend fun updateBookmark(bookmark: BookmarkEntity)
     
     suspend fun deleteBookmark(bookmark: BookmarkEntity)
     

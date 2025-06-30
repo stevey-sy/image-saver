@@ -26,10 +26,7 @@ class BookmarkLocalDataSourceImpl @Inject constructor(
         return bookmarkDao.insertBookmark(bookmark)
     }
     
-    override suspend fun updateBookmark(bookmark: BookmarkEntity) {
-        bookmarkDao.updateBookmark(bookmark)
-    }
-    
+
     override suspend fun deleteBookmark(bookmark: BookmarkEntity) {
         bookmarkDao.deleteBookmark(bookmark)
     }

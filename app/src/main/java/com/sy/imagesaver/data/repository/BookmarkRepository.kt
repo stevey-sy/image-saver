@@ -13,8 +13,6 @@ interface BookmarkRepository {
     suspend fun getBookmarkById(id: Int): Bookmark?
     
     suspend fun insertBookmark(media: Bookmark): Long
-
-    suspend fun updateBookmark(media: Bookmark)
     
     suspend fun deleteBookmark(media: Bookmark)
     
