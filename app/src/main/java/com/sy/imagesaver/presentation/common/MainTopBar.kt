@@ -18,7 +18,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.sy.imagesaver.R
 import com.sy.imagesaver.domain.data.MediaType
-import com.sy.imagesaver.presentation.bookmark.BookMarkViewModel
+import com.sy.imagesaver.presentation.bookmark.BookmarkViewModel
 import com.sy.imagesaver.presentation.navigation.Screen
 import com.sy.imagesaver.presentation.theme.AppIcons
 import com.sy.imagesaver.presentation.theme.Orange
@@ -28,7 +28,7 @@ import com.sy.imagesaver.data.cache.CachedQueryInfo
 @Composable
 fun MainTopBar(
     navController: NavHostController,
-    bookMarkViewModel: BookMarkViewModel,
+    bookMarkViewModel: BookmarkViewModel,
     showFilterDropdown: Boolean,
     onFilterDropdownChange: (Boolean) -> Unit,
     selectedFilter: MediaType?,

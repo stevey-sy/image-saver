@@ -13,7 +13,7 @@ import com.sy.imagesaver.domain.usecase.SearchMediaUseCase
 import com.sy.imagesaver.domain.usecase.AddBookmarkUseCase
 import com.sy.imagesaver.presentation.model.SearchResultUiModel
 import com.sy.imagesaver.data.repository.SearchRepository
-import com.sy.imagesaver.di.BookmarkManager
+import com.sy.imagesaver.presentation.manager.BookmarkManager
 import com.sy.imagesaver.util.NetworkUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext

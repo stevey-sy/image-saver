@@ -1,4 +1,4 @@
-package com.sy.imagesaver.di
+package com.sy.imagesaver.presentation.manager
 
 import com.sy.imagesaver.data.repository.BookmarkRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,16 +28,16 @@ class BookmarkManager @Inject constructor(
         }
         _bookmarkedThumbnailUrls.value = current
     }
-    
+
     fun removeBookmark(thumbnailUrl: String) {
         val current = _bookmarkedThumbnailUrls.value.toMutableSet()
         current.remove(thumbnailUrl)
         _bookmarkedThumbnailUrls.value = current
     }
-    
+
     fun addBookmark(thumbnailUrl: String) {
         val current = _bookmarkedThumbnailUrls.value.toMutableSet()
         current.add(thumbnailUrl)
         _bookmarkedThumbnailUrls.value = current
     }
-} 
+}

@@ -7,7 +7,7 @@ import com.sy.imagesaver.domain.usecase.DeleteBookmarkUseCase
 import com.sy.imagesaver.presentation.model.BookmarkUiModel
 import com.sy.imagesaver.presentation.model.mapper.BookmarkUiModelMapper
 import com.sy.imagesaver.domain.data.MediaType
-import com.sy.imagesaver.di.BookmarkManager
+import com.sy.imagesaver.presentation.manager.BookmarkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class BookMarkViewModel @Inject constructor(
+class BookmarkViewModel @Inject constructor(
     private val getBookmarkListUseCase: GetBookmarkListUseCase,
     private val deleteBookmarkUseCase: DeleteBookmarkUseCase,
     private val bookmarkManager: BookmarkManager,

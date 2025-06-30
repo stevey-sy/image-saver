@@ -1,5 +1,7 @@
 package com.sy.imagesaver.presentation.bookmark
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -8,7 +10,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.sy.imagesaver.domain.data.MediaType
+import androidx.activity.compose.BackHandler
 import com.sy.imagesaver.presentation.bookmark.component.BookmarkList
 import com.sy.imagesaver.presentation.bookmark.component.DeleteView
 import com.sy.imagesaver.presentation.bookmark.component.EmptyView
@@ -18,11 +20,10 @@ import com.sy.imagesaver.presentation.bookmark.component.ImagePopup
 import com.sy.imagesaver.presentation.common.CircularProgress
 import com.sy.imagesaver.presentation.common.ErrorMessageView
 import com.sy.imagesaver.presentation.manager.SnackBarManager
-import com.sy.imagesaver.presentation.model.BookmarkUiModel
 
 @Composable
 fun BookMarkScreen(
-    viewModel: BookMarkViewModel,
+    viewModel: BookmarkViewModel,
     snackBarManager: SnackBarManager
 ) {
     // ViewModel의 uiState 사용
@@ -33,15 +34,23 @@ fun BookMarkScreen(
         subscribeToSnackBarEvents(viewModel, snackBarManager)
     }
 
+    // 삭제 모드일 때 뒤로가기 버튼 처리
+    BackHandler(enabled = uiState.isDeleteMode) {
+        viewModel.toggleDeleteMode()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
+            .animateContentSize(
+                animationSpec = tween(durationMillis = 200) // 빠른 애니메이션
+            )
     ) {
         // 헤더
         Header(uiState.bookmarkList.size)
         
-        // 삭제 모드 UI
+        // 삭제 모드 UI - DeleteView 내부 AnimatedVisibility가 애니메이션 처리
         DeleteView(
             isDeleteMode = uiState.isDeleteMode,
             selectedItems = uiState.selectedItems,
@@ -56,7 +65,6 @@ fun BookMarkScreen(
             viewModel.clearFilter()
         }
 
-        // 메인 콘텐츠
         BookMarkContent(
             uiState = uiState,
             viewModel = viewModel
@@ -74,8 +82,8 @@ fun BookMarkScreen(
 
 @Composable
 private fun BookMarkContent(
-    uiState: BookMarkViewModel.UiState,
-    viewModel: BookMarkViewModel
+    uiState: BookmarkViewModel.UiState,
+    viewModel: BookmarkViewModel
 ) {
     when {
         uiState.isLoading -> {
@@ -102,15 +110,15 @@ private fun BookMarkContent(
 }
 
 private suspend fun subscribeToSnackBarEvents(
-    viewModel: BookMarkViewModel,
+    viewModel: BookmarkViewModel,
     snackBarManager: SnackBarManager
 ) {
     viewModel.snackBarEvent.collect { event ->
         when (event) {
-            is BookMarkViewModel.SnackBarEvent.Success -> {
+            is BookmarkViewModel.SnackBarEvent.Success -> {
                 snackBarManager.showSuccessSnackbar(event.message)
             }
-            is BookMarkViewModel.SnackBarEvent.Error -> {
+            is BookmarkViewModel.SnackBarEvent.Error -> {
                 snackBarManager.showErrorSnackbar(event.message)
             }
         }

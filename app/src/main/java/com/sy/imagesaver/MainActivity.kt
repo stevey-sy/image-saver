@@ -26,7 +26,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.collectAsState
 import kotlinx.coroutines.launch
-import com.sy.imagesaver.presentation.bookmark.BookMarkViewModel
+import com.sy.imagesaver.presentation.bookmark.BookmarkViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sy.imagesaver.data.cache.CachedQueryInfo
 import com.sy.imagesaver.presentation.common.MainBottomBar
@@ -59,7 +59,7 @@ fun MainScreen(
     val snackBarManager = rememberSnackBarManager()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
-    val bookMarkViewModel: BookMarkViewModel = hiltViewModel()
+    val bookMarkViewModel: BookmarkViewModel = hiltViewModel()
     
     // 필터 드롭다운 상태
     var showFilterDropdown by remember { mutableStateOf(false) }

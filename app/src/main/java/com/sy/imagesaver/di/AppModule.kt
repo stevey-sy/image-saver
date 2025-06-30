@@ -3,6 +3,7 @@ package com.sy.imagesaver.di
 import android.content.Context
 import com.sy.imagesaver.data.repository.BookmarkRepository
 import com.sy.imagesaver.data.repository.BookmarkRepositoryImpl
+import com.sy.imagesaver.presentation.manager.BookmarkManager
 import com.sy.imagesaver.util.NetworkUtil
 import dagger.Binds
 import dagger.Module

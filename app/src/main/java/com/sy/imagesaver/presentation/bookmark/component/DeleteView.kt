@@ -26,7 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.sy.imagesaver.R
-import com.sy.imagesaver.presentation.bookmark.BookMarkViewModel
+import com.sy.imagesaver.presentation.bookmark.BookmarkViewModel
 import com.sy.imagesaver.presentation.model.BookmarkUiModel
 import com.sy.imagesaver.presentation.theme.Orange
 
@@ -35,21 +35,21 @@ fun ColumnScope.DeleteView(
     isDeleteMode: Boolean,
     selectedItems: Set<Int>,
     bookmarkList: List<BookmarkUiModel>,
-    viewModel: BookMarkViewModel
+    viewModel: BookmarkViewModel
 ) {
     AnimatedVisibility(
         visible = isDeleteMode,
         enter = slideInVertically(
             initialOffsetY = { -it },
-            animationSpec = tween(durationMillis = 300)
+            animationSpec = tween(durationMillis = 200)
         ) + fadeIn(
-            animationSpec = tween(durationMillis = 300)
+            animationSpec = tween(durationMillis = 200)
         ),
         exit = slideOutVertically(
             targetOffsetY = { -it },
-            animationSpec = tween(durationMillis = 300)
+            animationSpec = tween(durationMillis = 200)
         ) + fadeOut(
-            animationSpec = tween(durationMillis = 300)
+            animationSpec = tween(durationMillis = 200)
         )
     ) {
         Row(

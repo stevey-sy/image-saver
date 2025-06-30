@@ -10,7 +10,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.sy.imagesaver.presentation.bookmark.BookMarkViewModel
+import com.sy.imagesaver.presentation.bookmark.BookmarkViewModel
 import com.sy.imagesaver.presentation.model.BookmarkUiModel
 
 @Composable
@@ -18,7 +18,7 @@ fun BookmarkList(
     bookmarkList: List<BookmarkUiModel>,
     isDeleteMode: Boolean,
     selectedItems: Set<Int>,
-    viewModel: BookMarkViewModel
+    viewModel: BookmarkViewModel
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
