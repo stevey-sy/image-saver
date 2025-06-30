@@ -42,7 +42,6 @@ class SearchRepositoryImpl @Inject constructor(
     }
     
     override fun searchMediaPagedWithCache(query: String): Flow<PagingData<SearchResultUiModel>> {
-        // MediaPagingSource에서 캐시 로직을 처리하므로 단순히 Pager를 반환
         return Pager(
             config = PagingConfig(
                 pageSize = 30,

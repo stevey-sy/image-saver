@@ -2,12 +2,11 @@ package com.sy.imagesaver.presentation.bookmark
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.sy.imagesaver.domain.usecase.GetBookmarkedMediaUseCase
+import com.sy.imagesaver.domain.usecase.GetBookmarkListUseCase
 import com.sy.imagesaver.domain.usecase.DeleteBookmarkUseCase
 import com.sy.imagesaver.presentation.model.BookmarkUiModel
 import com.sy.imagesaver.domain.data.MediaType
 import com.sy.imagesaver.di.BookmarkManager
-import com.sy.imagesaver.presentation.search.SearchViewModel.SnackBarEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,12 +15,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.combine
 import javax.inject.Inject
 
 @HiltViewModel
 class BookMarkViewModel @Inject constructor(
-    private val getBookmarkedMediaUseCase: GetBookmarkedMediaUseCase,
+    private val getBookmarkListUseCase: GetBookmarkListUseCase,
     private val deleteBookmarkUseCase: DeleteBookmarkUseCase,
     private val bookmarkManager: BookmarkManager
 ) : ViewModel() {
@@ -146,7 +144,7 @@ class BookMarkViewModel @Inject constructor(
                 _isLoading.value = true
                 _error.value = null
                 
-                getBookmarkedMediaUseCase.getAllBookmarkedMedia()
+                getBookmarkListUseCase.getAllBookmarkedMedia()
                     .map { bookmarks ->
                         bookmarks.map { BookmarkUiModel.fromBookmark(it) }
                     }
@@ -168,7 +166,7 @@ class BookMarkViewModel @Inject constructor(
                 _isLoading.value = true
                 _error.value = null
                 
-                getBookmarkedMediaUseCase.getBookmarkedMediaByType(type)
+                getBookmarkListUseCase.getBookmarkedMediaByType(type)
                     .map { bookmarks ->
                         bookmarks.map { BookmarkUiModel.fromBookmark(it) }
                     }

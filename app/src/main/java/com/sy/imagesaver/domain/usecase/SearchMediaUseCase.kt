@@ -9,7 +9,6 @@ import javax.inject.Inject
 class SearchMediaUseCase @Inject constructor(
     private val searchRepository: SearchRepository
 ) {
-    
     fun searchMediaPaged(query: String): Flow<PagingData<SearchResultUiModel>> {
         return searchRepository.searchMediaPagedWithCache(query)
     }
