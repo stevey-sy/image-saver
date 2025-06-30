@@ -26,12 +26,12 @@ class SnackBarManager @Inject constructor() {
         this.showSnackbarWithColor = callback
     }
     
-    fun showSuccessSnackbar(message: String, duration: SnackbarDuration = SnackbarDuration.Short) {
-        showSnackbarWithColor?.invoke(message, Orange) // 초록색
-    }
-    
     fun showErrorSnackbar(message: String, duration: SnackbarDuration = SnackbarDuration.Long) {
         showSnackbarWithColor?.invoke(message, Purple)
+    }
+    
+    fun showSuccessSnackbar(message: String, duration: SnackbarDuration = SnackbarDuration.Short) {
+        showSnackbarWithColor?.invoke(message, Orange) // 주황색
     }
     
     enum class SnackbarDuration {

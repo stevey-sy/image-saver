@@ -56,6 +56,9 @@ import com.sy.imagesaver.presentation.bookmark.BookMarkViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.ui.unit.dp
 import com.sy.imagesaver.domain.data.MediaType
+import com.sy.imagesaver.presentation.common.MainBottomBar
+import com.sy.imagesaver.presentation.common.MainSnackBar
+import com.sy.imagesaver.presentation.common.MainTopBar
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -112,108 +115,22 @@ fun MainScreen() {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(text = stringResource(id = R.string.app_name))
-                },
-                actions = {
-                    // 현재 화면이 BookmarkScreen일 때만 아이콘들 표시
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
-                    val currentDestination = navBackStackEntry?.destination
-                    val isBookmarkScreen = currentDestination?.hierarchy?.any { it.route == Screen.Bookmark.route } == true
-                    
-                    if (isBookmarkScreen) {
-                        Box {
-                            IconButton(onClick = { showFilterDropdown = true }) {
-                                Icon(AppIcons.Filter, contentDescription = "Filter")
-                            }
-                            DropdownMenu(
-                                expanded = showFilterDropdown,
-                                onDismissRequest = { showFilterDropdown = false }
-                            ) {
-                                listOf("전체", "이미지", "영상").forEach { filter ->
-                                    DropdownMenuItem(
-                                        text = { Text(filter) },
-                                        onClick = {
-                                            bookMarkViewModel.updateFilter(filter)
-                                            showFilterDropdown = false
-                                        },
-                                        leadingIcon = {
-                                            val isSelected = when (filter) {
-                                                "전체" -> selectedFilter == null
-                                                "이미지" -> selectedFilter == MediaType.IMAGE
-                                                "영상" -> selectedFilter == MediaType.VIDEO
-                                                else -> false
-                                            }
-                                            if (isSelected) {
-                                                Icon(
-                                                    Icons.Default.Check,
-                                                    contentDescription = "선택됨",
-                                                    tint = Orange
-                                                )
-                                            }
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                        IconButton(onClick = { bookMarkViewModel.toggleDeleteMode() }) {
-                            Icon(AppIcons.Trash, contentDescription = "Trash")
-                        }
-                    }
-                }
+            MainTopBar(
+                navController = navController,
+                bookMarkViewModel = bookMarkViewModel,
+                showFilterDropdown = showFilterDropdown,
+                onFilterDropdownChange = { showFilterDropdown = it },
+                selectedFilter = selectedFilter
             )
         },
         bottomBar = {
-            NavigationBar {
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentDestination = navBackStackEntry?.destination
-                
-                listOf(
-                    Screen.Bookmark to Icons.Default.Check,
-                    Screen.Search to Icons.Default.Search
-                ).forEach { (screen, icon) ->
-                    NavigationBarItem(
-                        icon = { Icon(icon, contentDescription = screen.route) },
-                        label = { 
-                            Text(
-                                when (screen) {
-                                    Screen.Bookmark -> "나의 보관함"
-                                    Screen.Search -> "검색"
-                                }
-                            ) 
-                        },
-                        selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
-                        onClick = {
-                            navController.navigate(screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Orange,
-                            selectedTextColor = Orange,
-                            indicatorColor = Orange.copy(alpha = 0.2f)
-                        )
-                    )
-                }
-            }
+            MainBottomBar(navController = navController)
         },
         snackbarHost = { 
-            SnackbarHost(
-                hostState = snackbarHostState,
-                snackbar = { snackbarData ->
-                    Snackbar(
-                        snackbarData = snackbarData,
-                        containerColor = snackbarColor, // 동적 색상 적용
-                        contentColor = Color.White, // 흰색 텍스트
-                        actionContentColor = actionColor, // 동적 액션 버튼 색상
-                        shape = SnackbarDefaults.shape,
-                    )
-                }
+            MainSnackBar(
+                snackbarHostState = snackbarHostState,
+                snackbarColor = snackbarColor,
+                actionColor = actionColor
             )
         }
     ) { innerPadding ->
