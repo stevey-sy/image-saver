@@ -74,11 +74,11 @@ class SearchRepositoryImpl @Inject constructor(
         return searchCacheManager.getCacheInfo()
     }
     
-    override suspend fun getCachedQueries(): List<String> {
+    override suspend fun getCachedQueryList(): List<String> {
         return searchCacheManager.getCachedQueries()
     }
     
-    override suspend fun getCachedQueriesWithTime(): List<CachedQueryInfo> {
+    override suspend fun getCachedQueryListWithTime(): List<CachedQueryInfo> {
         return searchCacheManager.getCachedQueriesWithTime()
     }
 }

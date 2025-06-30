@@ -13,6 +13,6 @@ interface SearchRepository {
     fun searchMediaPagedWithCache(query: String): Flow<PagingData<SearchResultUiModel>>
     suspend fun clearSearchCache()
     suspend fun getCacheInfo(): Map<String, Long> // query -> remaining minutes
-    suspend fun getCachedQueries(): List<String> // 캐시된 검색어 목록 반환
-    suspend fun getCachedQueriesWithTime(): List<CachedQueryInfo> // 캐시된 검색어와 시간 정보 반환
+    suspend fun getCachedQueryList(): List<String> // 캐시된 검색어 목록 반환
+    suspend fun getCachedQueryListWithTime(): List<CachedQueryInfo> // 캐시된 검색어와 시간 정보 반환
 }

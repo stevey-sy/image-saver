@@ -12,7 +12,6 @@ import com.sy.imagesaver.domain.usecase.SearchMediaUseCase
 import com.sy.imagesaver.domain.usecase.AddBookmarkUseCase
 import com.sy.imagesaver.presentation.model.SearchResultUiModel
 import com.sy.imagesaver.data.repository.SearchRepository
-import com.sy.imagesaver.data.repository.BookmarkRepository
 import com.sy.imagesaver.di.BookmarkManager
 import com.sy.imagesaver.util.NetworkUtil
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,13 +21,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onEach
 
 @HiltViewModel
@@ -122,7 +118,7 @@ class SearchViewModel @Inject constructor(
     private fun loadCachedQueries() {
         viewModelScope.launch {
             try {
-                val queries = searchRepository.getCachedQueriesWithTime()
+                val queries = searchRepository.getCachedQueryListWithTime()
                 _cachedQueries.value = queries
             } catch (e: Exception) {
                 // 에러 처리 (선택사항)
