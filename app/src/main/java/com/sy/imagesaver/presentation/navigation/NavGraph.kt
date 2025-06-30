@@ -49,9 +49,9 @@ fun NavGraph(
             }
             
             // 캐시된 검색어 목록 상태 변화 감지
-            val cachedQueries = searchViewModel.cachedQueries.collectAsState()
-            LaunchedEffect(cachedQueries.value) {
-                onCachedQueriesUpdate?.invoke(cachedQueries.value)
+            val searchUiState = searchViewModel.uiState.collectAsState()
+            LaunchedEffect(searchUiState.value.cachedQueries) {
+                onCachedQueriesUpdate?.invoke(searchUiState.value.cachedQueries)
             }
             
             SearchScreen(viewModel = searchViewModel)

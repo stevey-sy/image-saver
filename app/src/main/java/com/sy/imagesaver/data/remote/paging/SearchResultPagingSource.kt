@@ -55,7 +55,7 @@ class SearchResultPagingSource @Inject constructor(
                     return LoadResult.Page(
                         data = cachedUiModels,
                         prevKey = null,
-                        nextKey = null // 캐시된 데이터는 한 페이지로 간주
+                        nextKey = 2 // 캐시된 데이터는 1페이지이므로 다음 페이지는 항상 2
                     )
                 }
             }

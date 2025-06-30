@@ -43,33 +43,19 @@ class SearchViewModel @Inject constructor(
         private const val TAG = "SearchViewModel"
     }
     
+    // 내부 상태 관리용 (외부 노출 안함)
     private val _searchQuery = MutableStateFlow("")
-    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
-    
-    // 디바운싱된 검색어
     private val _debouncedSearchQuery = MutableStateFlow("")
-    val debouncedSearchQuery: StateFlow<String> = _debouncedSearchQuery.asStateFlow()
-    
-    // 검색 대기 상태 (타이핑 중)
     private val _isSearching = MutableStateFlow(false)
-    val isSearching: StateFlow<Boolean> = _isSearching.asStateFlow()
-    
     private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error.asStateFlow()
+    private val _cachedQueries = MutableStateFlow<List<CachedQueryInfo>>(emptyList())
+    private val _isSearchFocused = MutableStateFlow(false)
     
     // SnackBar 메시지를 위한 이벤트
     private val _snackBarEvent = MutableSharedFlow<SnackBarEvent>()
     val snackBarEvent = _snackBarEvent.asSharedFlow()
     
-    // 캐시된 검색어 목록
-    private val _cachedQueries = MutableStateFlow<List<CachedQueryInfo>>(emptyList())
-    val cachedQueries: StateFlow<List<CachedQueryInfo>> = _cachedQueries.asStateFlow()
-    
-    // 검색창 포커스 상태
-    private val _isSearchFocused = MutableStateFlow(false)
-    val isSearchFocused: StateFlow<Boolean> = _isSearchFocused.asStateFlow()
-    
-    // UI 상태를 하나로 통합
+    // UI 상태를 하나로 통합 - 외부에는 이것만 노출
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
     
@@ -83,30 +69,56 @@ class SearchViewModel @Inject constructor(
         // 디바운싱 로직 설정
         setupDebouncing()
         
-        // 개별 상태들을 UiState로 통합
-        setupUiStateUpdates()
+        // 북마크 상태 변경 감지
+        setupBookmarkUpdates()
+    }
+    
+    private fun updateUiState(update: (UiState) -> UiState) {
+        _uiState.value = update(_uiState.value)
     }
     
     private fun setupDebouncing() {
         viewModelScope.launch {
-            searchQuery
-                .collect { query ->
-                    if (query.isNotBlank()) {
-                        _isSearching.value = true
-                    } else {
-                        _isSearching.value = false
-                        _debouncedSearchQuery.value = ""
+            _searchQuery.collect { query ->
+                updateUiState { it.copy(searchQuery = query) }
+                
+                if (query.isNotBlank()) {
+                    _isSearching.value = true
+                    updateUiState { it.copy(isSearching = true) }
+                } else {
+                    _isSearching.value = false
+                    _debouncedSearchQuery.value = ""
+                    updateUiState { 
+                        it.copy(
+                            isSearching = false,
+                            debouncedSearchQuery = ""
+                        )
                     }
                 }
+            }
         }
         
         viewModelScope.launch {
-            searchQuery
-                .debounce(1200) // 5초 디바운싱
+            _searchQuery
+                .debounce(1200) // 1.2초 디바운싱
                 .collect { query ->
                     _debouncedSearchQuery.value = query
                     _isSearching.value = false
+                    updateUiState { 
+                        it.copy(
+                            debouncedSearchQuery = query,
+                            isSearching = false
+                        )
+                    }
                 }
+        }
+    }
+    
+    private fun setupBookmarkUpdates() {
+        viewModelScope.launch {
+            bookmarkManager.bookmarkedThumbnailUrls.collect { bookmarkedThumbnailUrls ->
+                updateUiState { it.copy(bookmarkedThumbnailUrls = bookmarkedThumbnailUrls) }
+            }
         }
     }
     
@@ -126,6 +138,7 @@ class SearchViewModel @Inject constructor(
                 val queries = searchRepository.getCachedQueryListWithTime()
                 Log.d(TAG, "Loaded cached queries: $queries")
                 _cachedQueries.value = queries
+                updateUiState { it.copy(cachedQueries = queries) }
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading cached queries", e)
             }
@@ -139,14 +152,17 @@ class SearchViewModel @Inject constructor(
     fun clearSearchQuery() {
         _searchQuery.value = ""
         _error.value = null
+        updateUiState { it.copy(error = null) }
     }
     
     fun setError(errorMessage: String) {
         _error.value = errorMessage
+        updateUiState { it.copy(error = errorMessage) }
     }
     
     fun clearError() {
         _error.value = null
+        updateUiState { it.copy(error = null) }
     }
     
     // 캐시된 검색어 선택
@@ -155,11 +171,20 @@ class SearchViewModel @Inject constructor(
         _debouncedSearchQuery.value = query
         _isSearching.value = false
         _error.value = null
+        updateUiState { 
+            it.copy(
+                searchQuery = query,
+                debouncedSearchQuery = query,
+                isSearching = false,
+                error = null
+            )
+        }
     }
     
     // 검색창 포커스 상태 설정
     fun setSearchFocus(focused: Boolean) {
         _isSearchFocused.value = focused
+        updateUiState { it.copy(isSearchFocused = focused) }
     }
     
     // 캐시된 검색어 목록 새로고침
@@ -169,6 +194,8 @@ class SearchViewModel @Inject constructor(
     
     fun retrySearch() {
         _error.value = null
+        updateUiState { it.copy(error = null) }
+        
         // 현재 검색어로 다시 검색을 트리거하기 위해 searchQuery를 다시 설정
         val currentQuery = _searchQuery.value
         if (currentQuery.isNotBlank()) {
@@ -251,54 +278,6 @@ class SearchViewModel @Inject constructor(
             else -> context.getString(R.string.search_error, error.message)
         }
         setError(errorMessage)
-    }
-    
-    private fun setupUiStateUpdates() {
-        viewModelScope.launch {
-            _searchQuery.collect { searchQuery ->
-                updateUiState { it.copy(searchQuery = searchQuery) }
-            }
-        }
-        
-        viewModelScope.launch {
-            _debouncedSearchQuery.collect { debouncedSearchQuery ->
-                updateUiState { it.copy(debouncedSearchQuery = debouncedSearchQuery) }
-            }
-        }
-        
-        viewModelScope.launch {
-            _isSearching.collect { isSearching ->
-                updateUiState { it.copy(isSearching = isSearching) }
-            }
-        }
-        
-        viewModelScope.launch {
-            _error.collect { error ->
-                updateUiState { it.copy(error = error) }
-            }
-        }
-        
-        viewModelScope.launch {
-            bookmarkManager.bookmarkedThumbnailUrls.collect { bookmarkedThumbnailUrls ->
-                updateUiState { it.copy(bookmarkedThumbnailUrls = bookmarkedThumbnailUrls) }
-            }
-        }
-        
-        viewModelScope.launch {
-            _cachedQueries.collect { cachedQueries ->
-                updateUiState { it.copy(cachedQueries = cachedQueries) }
-            }
-        }
-        
-        viewModelScope.launch {
-            _isSearchFocused.collect { isSearchFocused ->
-                updateUiState { it.copy(isSearchFocused = isSearchFocused) }
-            }
-        }
-    }
-    
-    private fun updateUiState(update: (UiState) -> UiState) {
-        _uiState.value = update(_uiState.value)
     }
     
     sealed class SnackBarEvent {
