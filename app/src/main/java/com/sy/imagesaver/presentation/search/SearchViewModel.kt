@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.sy.imagesaver.R
+import com.sy.imagesaver.data.cache.CachedQueryInfo
 import com.sy.imagesaver.data.mapper.MediaUiModelMapper
 import com.sy.imagesaver.domain.usecase.SearchMediaUseCase
 import com.sy.imagesaver.domain.usecase.AddBookmarkUseCase
@@ -28,6 +29,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onEach
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
@@ -58,6 +60,14 @@ class SearchViewModel @Inject constructor(
     private val _snackBarEvent = MutableSharedFlow<SnackBarEvent>()
     val snackBarEvent = _snackBarEvent.asSharedFlow()
     
+    // 캐시된 검색어 목록
+    private val _cachedQueries = MutableStateFlow<List<CachedQueryInfo>>(emptyList())
+    val cachedQueries: StateFlow<List<CachedQueryInfo>> = _cachedQueries.asStateFlow()
+    
+    // 검색창 포커스 상태
+    private val _isSearchFocused = MutableStateFlow(false)
+    val isSearchFocused: StateFlow<Boolean> = _isSearchFocused.asStateFlow()
+    
     // UI 상태를 하나로 통합
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
@@ -65,6 +75,9 @@ class SearchViewModel @Inject constructor(
     init {
         // 앱 시작 시 기존 북마크된 아이템들 로드
         loadBookmarkedItems()
+        
+        // 캐시된 검색어 목록 로드
+        loadCachedQueries()
         
         // 디바운싱 로직 설정
         setupDebouncing()
@@ -106,6 +119,17 @@ class SearchViewModel @Inject constructor(
         }
     }
     
+    private fun loadCachedQueries() {
+        viewModelScope.launch {
+            try {
+                val queries = searchRepository.getCachedQueriesWithTime()
+                _cachedQueries.value = queries
+            } catch (e: Exception) {
+                // 에러 처리 (선택사항)
+            }
+        }
+    }
+    
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
     }
@@ -123,6 +147,24 @@ class SearchViewModel @Inject constructor(
         _error.value = null
     }
     
+    // 캐시된 검색어 선택
+    fun selectCachedQuery(query: String) {
+        _searchQuery.value = query
+        _debouncedSearchQuery.value = query
+        _isSearching.value = false
+        _error.value = null
+    }
+    
+    // 검색창 포커스 상태 설정
+    fun setSearchFocus(focused: Boolean) {
+        _isSearchFocused.value = focused
+    }
+    
+    // 캐시된 검색어 목록 새로고침
+    fun refreshCachedQueries() {
+        loadCachedQueries()
+    }
+    
     fun retrySearch() {
         _error.value = null
         // 현재 검색어로 다시 검색을 트리거하기 위해 searchQuery를 다시 설정
@@ -135,7 +177,12 @@ class SearchViewModel @Inject constructor(
     
     fun getSearchResultFlow(query: String): Flow<PagingData<SearchResultUiModel>> {
         return if (query.isNotBlank()) {
-            searchMediaUseCase.searchMediaPaged(query).cachedIn(viewModelScope)
+            searchMediaUseCase.searchMediaPaged(query)
+                .onEach { pagingData ->
+                    // 검색 결과가 로드되면 캐시된 쿼리 목록 갱신
+                    refreshCachedQueries()
+                }
+                .cachedIn(viewModelScope)
         } else {
             kotlinx.coroutines.flow.flowOf(PagingData.empty())
         }
@@ -228,6 +275,18 @@ class SearchViewModel @Inject constructor(
                 updateUiState { it.copy(bookmarkedThumbnailUrls = bookmarkedThumbnailUrls) }
             }
         }
+        
+        viewModelScope.launch {
+            _cachedQueries.collect { cachedQueries ->
+                updateUiState { it.copy(cachedQueries = cachedQueries) }
+            }
+        }
+        
+        viewModelScope.launch {
+            _isSearchFocused.collect { isSearchFocused ->
+                updateUiState { it.copy(isSearchFocused = isSearchFocused) }
+            }
+        }
     }
     
     private fun updateUiState(update: (UiState) -> UiState) {
@@ -244,6 +303,8 @@ class SearchViewModel @Inject constructor(
         val debouncedSearchQuery: String = "",
         val isSearching: Boolean = false,
         val error: String? = null,
-        val bookmarkedThumbnailUrls: Set<String> = emptySet()
+        val bookmarkedThumbnailUrls: Set<String> = emptySet(),
+        val cachedQueries: List<CachedQueryInfo> = emptyList(),
+        val isSearchFocused: Boolean = false
     )
 }

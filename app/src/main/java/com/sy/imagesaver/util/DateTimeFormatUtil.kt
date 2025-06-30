@@ -53,3 +53,15 @@ private val ymdHmFormat = LocalDateTime.Format {
 
 fun LocalDateTime.formatYmdHm(): String =
     this.format(ymdHmFormat)
+
+// HH:mm 형식의 포맷터 추가
+private val hmFormat = LocalDateTime.Format {
+    hour(); char(':'); minute()
+}
+
+// Instant를 HH:mm 형식의 문자열로 변환
+@OptIn(ExperimentalTime::class)
+fun Instant.formatHHmm(): String {
+    val localDateTime = this.toSeoulLocalDateTime()
+    return localDateTime.format(hmFormat)
+}

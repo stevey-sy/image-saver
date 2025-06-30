@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -15,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -47,7 +49,6 @@ fun SearchScreen(
             SearchTextArea(
                 searchQuery = uiState.searchQuery,
                 viewModel = viewModel,
-                focusManager = focusManager,
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -64,7 +65,7 @@ fun SearchScreen(
             // 검색 결과 영역
             SearchContent(
                 uiState = uiState,
-                viewModel = viewModel
+                viewModel = viewModel,
             )
         }
     }
@@ -73,8 +74,9 @@ fun SearchScreen(
 @Composable
 private fun SearchContent(
     uiState: SearchViewModel.UiState,
-    viewModel: SearchViewModel
+    viewModel: SearchViewModel,
 ) {
+    val focusManager = LocalFocusManager.current
     when {
         // 검색 대기 상태
         uiState.isSearching && uiState.searchQuery.isNotBlank() -> {
@@ -93,7 +95,7 @@ private fun SearchContent(
             SearchResultContent(
                 debouncedSearchQuery = uiState.debouncedSearchQuery,
                 bookmarkedThumbnailUrls = uiState.bookmarkedThumbnailUrls,
-                viewModel = viewModel
+                viewModel = viewModel,
             )
         }
     }
@@ -103,8 +105,9 @@ private fun SearchContent(
 private fun SearchResultContent(
     debouncedSearchQuery: String,
     bookmarkedThumbnailUrls: Set<String>,
-    viewModel: SearchViewModel
+    viewModel: SearchViewModel,
 ) {
+    val focusManager = LocalFocusManager.current
     val pagingFlow = remember(debouncedSearchQuery) {
         viewModel.getSearchResultFlow(debouncedSearchQuery)
     }
@@ -126,7 +129,7 @@ private fun SearchResultContent(
             gridState = gridState,
             lazyPagingItems = lazyPagingItems,
             bookmarkedThumbnailUrls = bookmarkedThumbnailUrls,
-            viewModel = viewModel
+            viewModel = viewModel,
         )
 
         // 로딩 상태 표시
@@ -179,10 +182,12 @@ private suspend fun handleLoadStateChanges(
         }
         is LoadState.NotLoading -> {
             viewModel.clearError()
+            // 검색 결과 로드가 완료되면 캐시된 쿼리 목록 갱신
+            viewModel.refreshCachedQueries()
         }
         else -> {}
-                }
-            }
+    }
+}
 
 
 

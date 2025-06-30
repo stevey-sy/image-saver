@@ -4,26 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -32,33 +17,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.NavDestination.Companion.hierarchy
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.sy.imagesaver.presentation.manager.rememberSnackBarManager
 import com.sy.imagesaver.presentation.navigation.NavGraph
-import com.sy.imagesaver.presentation.navigation.Screen
-import com.sy.imagesaver.presentation.theme.AppIcons
 import com.sy.imagesaver.presentation.theme.ImageSaverTheme
-import com.sy.imagesaver.presentation.theme.Orange
 import dagger.hilt.android.AndroidEntryPoint
-import androidx.compose.material3.SnackbarDefaults
-import androidx.compose.material3.SnackbarVisuals
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.material3.Snackbar
 import androidx.compose.runtime.collectAsState
 import kotlinx.coroutines.launch
 import com.sy.imagesaver.presentation.bookmark.BookMarkViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.compose.ui.unit.dp
-import com.sy.imagesaver.domain.data.MediaType
+import com.sy.imagesaver.data.cache.CachedQueryInfo
 import com.sy.imagesaver.presentation.common.MainBottomBar
 import com.sy.imagesaver.presentation.common.MainSnackBar
 import com.sy.imagesaver.presentation.common.MainTopBar
+import com.sy.imagesaver.presentation.manager.SnackBarManager
+import com.sy.imagesaver.presentation.theme.Orange
+import com.sy.imagesaver.presentation.theme.Purple
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -76,38 +52,46 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    modifier: Modifier = Modifier
+) {
     val navController = rememberNavController()
+    val snackBarManager = rememberSnackBarManager()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
-    val snackBarManager = rememberSnackBarManager()
     val bookMarkViewModel: BookMarkViewModel = hiltViewModel()
     
-    // 필터 dropdown 상태
+    // 필터 드롭다운 상태
     var showFilterDropdown by remember { mutableStateOf(false) }
     val selectedFilter by bookMarkViewModel.selectedFilter.collectAsState()
     
+    // History dropdown 상태
+    var showHistoryDropdown by remember { mutableStateOf(false) }
+    var cachedQueries by remember { mutableStateOf<List<CachedQueryInfo>>(emptyList()) }
+    var onHistoryItemClick: (String) -> Unit = {}
+    
     // SnackBar 색상 상태
-    var snackbarColor by remember { mutableStateOf(Color(0xFF4CAF50)) } // 기본 초록색
+    var snackbarColor by remember { mutableStateOf(Color.Transparent) }
+    var actionColor by remember { mutableStateOf(Color.White) }
     
-    // 액션 버튼 색상 계산
-    val actionColor = when {
-        snackbarColor == Color(0xFF4CAF50) -> Color(0xFFE8F5E8) // 초록색 배경일 때 연한 초록색
-        snackbarColor == Color(0xFFF44336) -> Color(0xFFFFEBEE) // 붉은색 배경일 때 연한 붉은색
-        else -> Color(0xFFE8F5E8) // 기본값
-    }
-    
-    // SnackBarManager에 SnackbarHostState 설정
-    LaunchedEffect(snackbarHostState, coroutineScope) {
-        snackBarManager.setSnackbarHostState(snackbarHostState, coroutineScope)
-    }
-    
-    // SnackBarManager에 색상 변경 콜백 설정
+    // SnackBar 이벤트 처리
     LaunchedEffect(snackBarManager) {
-        snackBarManager.setShowSnackbarWithColor { message, color ->
-            snackbarColor = color
+        snackBarManager.snackBarFlow.collect { event ->
+            when (event) {
+                is SnackBarManager.SnackBarEvent.Success -> {
+                    snackbarColor = Orange  // Green
+                    actionColor = Color.White
+                }
+                is SnackBarManager.SnackBarEvent.Error -> {
+                    snackbarColor = Purple  // Red
+                    actionColor = Color.White
+                }
+            }
             coroutineScope.launch {
-                snackbarHostState.showSnackbar(message)
+                snackbarHostState.showSnackbar(
+                    message = event.message,
+                    withDismissAction = true
+                )
             }
         }
     }
@@ -120,7 +104,11 @@ fun MainScreen() {
                 bookMarkViewModel = bookMarkViewModel,
                 showFilterDropdown = showFilterDropdown,
                 onFilterDropdownChange = { showFilterDropdown = it },
-                selectedFilter = selectedFilter
+                selectedFilter = selectedFilter,
+                showHistoryDropdown = showHistoryDropdown,
+                onHistoryDropdownChange = { showHistoryDropdown = it },
+                cachedQueryList = cachedQueries,
+                onHistoryItemClick = onHistoryItemClick
             )
         },
         bottomBar = {
@@ -138,6 +126,14 @@ fun MainScreen() {
             navController = navController,
             snackBarManager = snackBarManager,
             bookMarkViewModel = bookMarkViewModel,
+            onSearchViewModelReady = { searchViewModel ->
+                onHistoryItemClick = { query ->
+                    searchViewModel.selectCachedQuery(query)
+                }
+            },
+            onCachedQueriesUpdate = { queries ->
+                cachedQueries = queries
+            },
             modifier = Modifier.padding(innerPadding)
         )
     }

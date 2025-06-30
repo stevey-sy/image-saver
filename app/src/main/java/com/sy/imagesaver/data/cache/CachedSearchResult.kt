@@ -5,8 +5,9 @@ import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+import javax.inject.Inject
 
-data class CachedSearchResult @OptIn(ExperimentalTime::class) constructor(
+data class CachedSearchResult @OptIn(ExperimentalTime::class) @Inject constructor(
     val query: String,
     val mediaList: List<SearchResultUiModel> = emptyList(),
     val cachedAt: Instant = Clock.System.now()

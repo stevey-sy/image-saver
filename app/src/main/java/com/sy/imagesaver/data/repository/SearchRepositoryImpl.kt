@@ -3,6 +3,7 @@ package com.sy.imagesaver.data.repository
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import com.sy.imagesaver.data.cache.CachedQueryInfo
 import com.sy.imagesaver.data.cache.SearchCacheManager
 import com.sy.imagesaver.data.local.datasource.BookmarkLocalDataSource
 import com.sy.imagesaver.data.mapper.SearchResultMapper
@@ -71,5 +72,13 @@ class SearchRepositoryImpl @Inject constructor(
     
     override suspend fun getCacheInfo(): Map<String, Long> {
         return searchCacheManager.getCacheInfo()
+    }
+    
+    override suspend fun getCachedQueries(): List<String> {
+        return searchCacheManager.getCachedQueries()
+    }
+    
+    override suspend fun getCachedQueriesWithTime(): List<CachedQueryInfo> {
+        return searchCacheManager.getCachedQueriesWithTime()
     }
 }

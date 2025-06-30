@@ -22,6 +22,7 @@ import com.sy.imagesaver.presentation.bookmark.BookMarkViewModel
 import com.sy.imagesaver.presentation.navigation.Screen
 import com.sy.imagesaver.presentation.theme.AppIcons
 import com.sy.imagesaver.presentation.theme.Orange
+import com.sy.imagesaver.data.cache.CachedQueryInfo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,17 +31,22 @@ fun MainTopBar(
     bookMarkViewModel: BookMarkViewModel,
     showFilterDropdown: Boolean,
     onFilterDropdownChange: (Boolean) -> Unit,
-    selectedFilter: MediaType?
+    selectedFilter: MediaType?,
+    showHistoryDropdown: Boolean = false,
+    onHistoryDropdownChange: (Boolean) -> Unit = {},
+    cachedQueryList: List<CachedQueryInfo> = emptyList(),
+    onHistoryItemClick: (String) -> Unit = {}
 ) {
     TopAppBar(
         title = {
             Text(text = stringResource(id = R.string.app_name))
         },
         actions = {
-            // 현재 화면이 BookmarkScreen일 때만 아이콘들 표시
+            // 현재 화면 확인
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentDestination = navBackStackEntry?.destination
             val isBookmarkScreen = currentDestination?.hierarchy?.any { it.route == Screen.Bookmark.route } == true
+            val isSearchScreen = currentDestination?.hierarchy?.any { it.route == Screen.Search.route } == true
             
             if (isBookmarkScreen) {
                 Box {
@@ -79,6 +85,39 @@ fun MainTopBar(
                 }
                 IconButton(onClick = { bookMarkViewModel.toggleDeleteMode() }) {
                     Icon(AppIcons.Trash, contentDescription = "Trash")
+                }
+            } else if (isSearchScreen) {
+                // SearchScreen에서 History 아이콘 표시
+                Box {
+                    IconButton(onClick = { onHistoryDropdownChange(true) }) {
+                        Icon(
+                            imageVector = AppIcons.History,
+                            contentDescription = "Search History"
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = showHistoryDropdown,
+                        onDismissRequest = { onHistoryDropdownChange(false) }
+                    ) {
+                        if (cachedQueryList.isEmpty()) {
+                            DropdownMenuItem(
+                                text = { Text("검색 기록이 없습니다") },
+                                onClick = { onHistoryDropdownChange(false) }
+                            )
+                        } else {
+                            cachedQueryList.forEach { queryInfo ->
+                                DropdownMenuItem(
+                                    text = { 
+                                        Text("${queryInfo.query} (${queryInfo.cachedTime})")
+                                    },
+                                    onClick = {
+                                        onHistoryItemClick(queryInfo.query)
+                                        onHistoryDropdownChange(false)
+                                    }
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }

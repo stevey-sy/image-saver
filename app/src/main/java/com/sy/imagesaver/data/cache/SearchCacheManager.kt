@@ -1,14 +1,22 @@
 package com.sy.imagesaver.data.cache
 
 import com.sy.imagesaver.presentation.model.SearchResultUiModel
+import com.sy.imagesaver.util.formatHHmm
 import javax.inject.Inject
 import javax.inject.Singleton
+import java.time.format.DateTimeFormatter
 import kotlin.time.ExperimentalTime
+
+data class CachedQueryInfo(
+    val query: String,
+    val cachedTime: String
+)
 
 @Singleton
 class SearchCacheManager @Inject constructor() {
     
     private val cache = mutableMapOf<String, CachedSearchResult>()
+    private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
     
     fun isCacheValid(query: String): Boolean {
         val cachedResult = cache[query]
@@ -70,6 +78,26 @@ class SearchCacheManager @Inject constructor() {
         return cache.mapValues { (_, cachedResult) ->
             cachedResult.getRemainingTimeMinutes()
         }
+    }
+    
+    fun getCachedQueries(): List<String> {
+        return cache.keys.toList()
+    }
+    
+    fun hasCachedQuery(query: String): Boolean {
+        return cache.containsKey(query) && !cache[query]!!.isExpired()
+    }
+    
+    @OptIn(ExperimentalTime::class)
+    fun getCachedQueriesWithTime(): List<CachedQueryInfo> {
+        return cache.entries
+            .filter { !it.value.isExpired() }
+            .map { (query, result) ->
+                CachedQueryInfo(
+                    query = query,
+                    cachedTime = result.cachedAt.formatHHmm()
+                )
+            }
     }
     
     companion object {
