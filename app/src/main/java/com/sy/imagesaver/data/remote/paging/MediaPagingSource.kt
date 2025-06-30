@@ -4,7 +4,7 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.sy.imagesaver.data.cache.SearchCacheManager
 import com.sy.imagesaver.data.local.datasource.BookmarkLocalDataSource
-import com.sy.imagesaver.data.mapper.MediaDtoMapper
+import com.sy.imagesaver.data.mapper.SearchResultMapper
 import com.sy.imagesaver.data.remote.datasource.ImageRemoteDataSource
 import com.sy.imagesaver.data.remote.datasource.VideoRemoteDataSource
 import com.sy.imagesaver.domain.data.SearchResult
@@ -17,7 +17,7 @@ class MediaPagingSource @Inject constructor(
     private val videoRemoteDataSource: VideoRemoteDataSource,
     private val bookmarkLocalDataSource: BookmarkLocalDataSource,
     private val searchCacheManager: SearchCacheManager,
-    private val mediaDtoMapper: MediaDtoMapper,
+    private val searchResultMapper: SearchResultMapper,
     private val query: String
 ) : PagingSource<Int, SearchResultUiModel>() {
 
@@ -54,8 +54,8 @@ class MediaPagingSource @Inject constructor(
             val videoResponse = videoRemoteDataSource.searchVideos(query, page, pageSize)
             
             // 이미지와 비디오 미디어 리스트를 합침
-            val imageMediaList = imageResponse.documents.map { mediaDtoMapper.fromImageDto(it) }
-            val videoMediaList = videoResponse.documents.map { mediaDtoMapper.fromVideoDto(it) }
+            val imageMediaList = imageResponse.documents.map { searchResultMapper.fromImageDto(it) }
+            val videoMediaList = videoResponse.documents.map { searchResultMapper.fromVideoDto(it) }
             val combinedMediaList = imageMediaList + videoMediaList
             
             // datetime 기준으로 정렬

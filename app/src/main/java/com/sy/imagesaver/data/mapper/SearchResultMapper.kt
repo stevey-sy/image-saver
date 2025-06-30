@@ -8,10 +8,10 @@ import kotlin.time.Instant
 import java.security.MessageDigest
 import javax.inject.Inject
 
-class MediaDtoMapper @Inject constructor() {
+class SearchResultMapper @Inject constructor() {
     @OptIn(ExperimentalTime::class)
     fun fromImageDto(dto: ImageDto): SearchResult {
-        // 안정적인 unique id 생성: thumbnailUrl + datetime 조합
+        // unique id 생성: thumbnailUrl + datetime 조합
         val uniqueId = "${dto.thumbnailUrl}_${dto.datetime}"
         
         return SearchResult.Image(
@@ -24,8 +24,7 @@ class MediaDtoMapper @Inject constructor() {
 
     @OptIn(ExperimentalTime::class)
     fun fromVideoDto(dto: VideoDto): SearchResult {
-        // 안정적인 unique id 생성: thumbnail + datetime 조합
-//        val uniqueId = generateStableId("${dto.thumbnail}_${dto.datetime}")
+        // unique id 생성: thumbnail + datetime 조합
         val uniqueId = "${dto.thumbnail}_${dto.datetime}"
         
         return SearchResult.Video(
@@ -36,11 +35,5 @@ class MediaDtoMapper @Inject constructor() {
             title = dto.title,
             playTime = dto.playTime
         )
-    }
-    
-    private fun generateStableId(input: String): String {
-        // SHA-256 해시를 사용하여 안정적이고 unique한 ID 생성
-        val bytes = MessageDigest.getInstance("SHA-256").digest(input.toByteArray())
-        return bytes.joinToString("") { "%02x".format(it) }.take(16) // 16자리로 제한
     }
 }

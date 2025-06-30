@@ -34,7 +34,7 @@ fun NavGraph(
             )
         }
         composable(Screen.Search.route) {
-            SearchScreen(snackBarManager = snackBarManager)
+            SearchScreen()
         }
     }
 }

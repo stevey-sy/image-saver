@@ -54,9 +54,6 @@ class SearchViewModel @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
     
-    // 북마크된 아이템의 thumbnailUrl을 추적 (BookmarkManager에서 가져옴)
-    val bookmarkedThumbnailUrls: StateFlow<Set<String>> = bookmarkManager.bookmarkedThumbnailUrls
-    
     // SnackBar 메시지를 위한 이벤트
     private val _snackBarEvent = MutableSharedFlow<SnackBarEvent>()
     val snackBarEvent = _snackBarEvent.asSharedFlow()
@@ -168,11 +165,6 @@ class SearchViewModel @Inject constructor(
                 
                 // BookmarkManager를 통해 북마크 상태 업데이트
                 bookmarkManager.addBookmark(searchResultUiModel.thumbnailUrl)
-                
-                // SnackBar 이벤트 발생
-                _snackBarEvent.emit(
-                    SnackBarEvent.Success(context.getString(R.string.bookmark_save_success))
-                )
                 
             } catch (e: Exception) {
                 // SnackBar 이벤트 발생

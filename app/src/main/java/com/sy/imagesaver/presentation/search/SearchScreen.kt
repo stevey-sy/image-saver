@@ -31,17 +31,11 @@ import kotlinx.coroutines.FlowPreview
 @OptIn(ExperimentalMaterial3Api::class, FlowPreview::class)
 @Composable
 fun SearchScreen(
-    viewModel: SearchViewModel = hiltViewModel(),
-    snackBarManager: SnackBarManager
+    viewModel: SearchViewModel = hiltViewModel()
 ) {
     // ViewModel의 uiState 사용
     val uiState = viewModel.uiState.collectAsState().value
     val focusManager = LocalFocusManager.current
-
-    // SnackBar 이벤트 구독
-    LaunchedEffect(Unit) {
-        subscribeToSnackBarEvents(viewModel, snackBarManager)
-    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -65,16 +59,16 @@ fun SearchScreen(
                     onRetry = { viewModel.retrySearch() }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                            }
+            }
 
             // 검색 결과 영역
             SearchContent(
                 uiState = uiState,
                 viewModel = viewModel
             )
-                        }
-                    }
-                }
+        }
+    }
+}
 
 @Composable
 private fun SearchContent(

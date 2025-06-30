@@ -5,7 +5,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.sy.imagesaver.data.cache.SearchCacheManager
 import com.sy.imagesaver.data.local.datasource.BookmarkLocalDataSource
-import com.sy.imagesaver.data.mapper.MediaDtoMapper
+import com.sy.imagesaver.data.mapper.SearchResultMapper
 import com.sy.imagesaver.data.remote.datasource.ImageRemoteDataSource
 import com.sy.imagesaver.data.remote.datasource.VideoRemoteDataSource
 import com.sy.imagesaver.data.remote.paging.MediaPagingSource
@@ -18,7 +18,7 @@ class SearchRepositoryImpl @Inject constructor(
     private val videoRemoteDataSource: VideoRemoteDataSource,
     private val bookmarkLocalDataSource: BookmarkLocalDataSource,
     private val searchCacheManager: SearchCacheManager,
-    private val mediaDtoMapper: MediaDtoMapper
+    private val searchResultMapper: SearchResultMapper
 ) : SearchRepository {
     
     override fun searchMediaPaged(query: String): Flow<PagingData<SearchResultUiModel>> {
@@ -34,7 +34,7 @@ class SearchRepositoryImpl @Inject constructor(
                     videoRemoteDataSource,
                     bookmarkLocalDataSource,
                     searchCacheManager,
-                    mediaDtoMapper,
+                    searchResultMapper,
                     query
                 )
             }
@@ -54,7 +54,7 @@ class SearchRepositoryImpl @Inject constructor(
                     videoRemoteDataSource,
                     bookmarkLocalDataSource,
                     searchCacheManager,
-                    mediaDtoMapper,
+                    searchResultMapper,
                     query
                 )
             }
