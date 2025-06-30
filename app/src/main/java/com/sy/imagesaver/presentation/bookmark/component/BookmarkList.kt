@@ -40,7 +40,7 @@ fun BookmarkList(
                     viewModel.showImagePopup(bookmarkItem.originalUrl)
                 },
                 onVideoClick = {
-                    viewModel.showVideoPopup(bookmarkItem.originalUrl)
+                    viewModel.showImagePopup(bookmarkItem.thumbnailUrl)
                 }
             )
         }

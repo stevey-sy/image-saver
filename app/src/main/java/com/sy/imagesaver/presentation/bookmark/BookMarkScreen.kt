@@ -15,7 +15,6 @@ import com.sy.imagesaver.presentation.bookmark.component.EmptyView
 import com.sy.imagesaver.presentation.bookmark.component.FilterStatusView
 import com.sy.imagesaver.presentation.bookmark.component.Header
 import com.sy.imagesaver.presentation.bookmark.component.ImagePopup
-import com.sy.imagesaver.presentation.bookmark.component.VideoPopup
 import com.sy.imagesaver.presentation.common.CircularProgress
 import com.sy.imagesaver.presentation.common.ErrorMessageView
 import com.sy.imagesaver.presentation.manager.SnackBarManager
@@ -64,19 +63,11 @@ fun BookMarkScreen(
         )
     }
     
-    // 이미지 팝업
-    if (uiState.showImagePopup && uiState.selectedImageUrl != null) {
+    // 이미지 팝업 (이미지 또는 비디오 썸네일)
+    if (uiState.showImagePopup && (uiState.selectedImageUrl != null)) {
         ImagePopup(
-            imageUrl = uiState.selectedImageUrl!!,
+            imageUrl = uiState.selectedImageUrl,
             onDismiss = { viewModel.hideImagePopup() }
-        )
-    }
-    
-    // 비디오 팝업
-    if (uiState.showVideoPopup && uiState.selectedVideoUrl != null) {
-        VideoPopup(
-            videoUrl = uiState.selectedVideoUrl!!,
-            onDismiss = { viewModel.hideVideoPopup() }
         )
     }
 }

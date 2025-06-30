@@ -63,7 +63,8 @@ fun MainScreen(
     
     // 필터 드롭다운 상태
     var showFilterDropdown by remember { mutableStateOf(false) }
-    val selectedFilter by bookMarkViewModel.selectedFilter.collectAsState()
+    val bookmarkUiState by bookMarkViewModel.uiState.collectAsState()
+    val selectedFilter = bookmarkUiState.selectedFilter
     
     // History dropdown 상태
     var showHistoryDropdown by remember { mutableStateOf(false) }
