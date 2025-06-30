@@ -10,13 +10,13 @@ interface KakaoApiService {
     suspend fun searchImages(
         @Query("query") query: String,
         @Query("page") page: Int,
-        @Query("size") size: Int = 30
+        @Query("size") size: Int = 20
     ): KakaoImageResponseDto
 
     @GET("v2/search/vclip")
     suspend fun searchVideos(
         @Query("query") query: String,
         @Query("page") page: Int,
-        @Query("size") size: Int = 15
+        @Query("size") size: Int = 20
     ): KakaoVideoResponseDto
 }
