@@ -35,5 +35,9 @@ object AppIcons {
     val Trash: Painter
         @Composable
         get() = painterResource(id = R.drawable.ic_trash)
+
+    val History: ImageVector
+        @Composable
+        get() = ImageVector.vectorResource(id = R.drawable.ic_history)
 }
 
