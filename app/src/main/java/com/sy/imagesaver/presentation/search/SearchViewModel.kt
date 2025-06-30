@@ -1,6 +1,7 @@
 package com.sy.imagesaver.presentation.search
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -37,6 +38,10 @@ class SearchViewModel @Inject constructor(
     private val networkUtil: NetworkUtil,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
+    
+    companion object {
+        private const val TAG = "SearchViewModel"
+    }
     
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
@@ -97,7 +102,7 @@ class SearchViewModel @Inject constructor(
         
         viewModelScope.launch {
             searchQuery
-                .debounce(500) // 5초 디바운싱
+                .debounce(1200) // 5초 디바운싱
                 .collect { query ->
                     _debouncedSearchQuery.value = query
                     _isSearching.value = false
@@ -119,9 +124,10 @@ class SearchViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val queries = searchRepository.getCachedQueryListWithTime()
+                Log.d(TAG, "Loaded cached queries: $queries")
                 _cachedQueries.value = queries
             } catch (e: Exception) {
-                // 에러 처리 (선택사항)
+                Log.e(TAG, "Error loading cached queries", e)
             }
         }
     }
@@ -172,39 +178,45 @@ class SearchViewModel @Inject constructor(
     }
     
     fun getSearchResultFlow(query: String): Flow<PagingData<SearchResultUiModel>> {
+        Log.d(TAG, "Starting search with query: $query")
         return if (query.isNotBlank()) {
             searchMediaUseCase.searchMediaPaged(query)
                 .onEach { pagingData ->
-                    // 검색 결과가 로드되면 캐시된 쿼리 목록 갱신
+                    Log.d(TAG, "Search results loaded, refreshing cached queries")
                     refreshCachedQueries()
                 }
                 .cachedIn(viewModelScope)
         } else {
+            Log.d(TAG, "Empty query, returning empty PagingData")
             kotlinx.coroutines.flow.flowOf(PagingData.empty())
         }
     }
     
     fun clearSearchCache() {
         viewModelScope.launch {
+            Log.d(TAG, "Clearing search cache")
             searchRepository.clearSearchCache()
+            Log.d(TAG, "Search cache cleared")
         }
     }
     
     fun getCacheInfo() {
         viewModelScope.launch {
             val cacheInfo = searchRepository.getCacheInfo()
-            // 디버그용 로그 출력
-            println("Cache Info: $cacheInfo")
+            Log.d(TAG, "Cache Info - Number of cached queries: ${cacheInfo.size}")
+            cacheInfo.forEach { (query, time) ->
+                Log.d(TAG, "Cached query: $query, Time remaining: $time minutes")
+            }
         }
     }
     
-    fun saveMedia(searchResultUiModel: SearchResultUiModel) {
+    fun addBookmark(searchResultUiModel: SearchResultUiModel) {
         viewModelScope.launch {
             try {
-                // MediaUiModel을 Media로 변환
-                val media = searchUiModelMapper.toSearchResult(searchResultUiModel)
+                // uiModel을 Domain model로 변환
+                val searchResult = searchUiModelMapper.toSearchResult(searchResultUiModel)
                 
-                val id = addBookmarkUseCase(media)
+                val id = addBookmarkUseCase(searchResult)
                 
                 // BookmarkManager를 통해 북마크 상태 업데이트
                 bookmarkManager.addBookmark(searchResultUiModel.thumbnailUrl)

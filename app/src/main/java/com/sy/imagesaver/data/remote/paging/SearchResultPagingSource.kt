@@ -1,5 +1,6 @@
 package com.sy.imagesaver.data.remote.paging
 
+import android.util.Log
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.sy.imagesaver.data.cache.SearchCacheManager
@@ -18,8 +19,13 @@ class SearchResultPagingSource @Inject constructor(
     private val bookmarkLocalDataSource: BookmarkLocalDataSource,
     private val searchCacheManager: SearchCacheManager,
     private val searchResultMapper: SearchResultMapper,
-    private val query: String
+    private val query: String,
+    private val pageSize: Int // 각 API 당 요청할 아이템 수
 ) : PagingSource<Int, SearchResultUiModel>() {
+
+    companion object {
+        private const val TAG = "SearchPagingSource"
+    }
 
     override fun getRefreshKey(state: PagingState<Int, SearchResultUiModel>): Int? {
         return state.anchorPosition?.let { anchorPosition ->
@@ -32,10 +38,12 @@ class SearchResultPagingSource @Inject constructor(
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, SearchResultUiModel> {
         return try {
             val page = params.key ?: 1
-            val pageSize = params.loadSize
+
+            Log.d(TAG, "Loading page $page for query: $query")
 
             // 첫 페이지이고 캐시가 유효한 경우 캐시된 데이터 사용
             if (page == 1 && searchCacheManager.isCacheValid(query)) {
+                Log.d(TAG, "Cache is valid for query: $query, using cached data")
                 val cachedMediaList = searchCacheManager.getCachedMediaList(query)
                 if (cachedMediaList != null) {
                     // Domain 모델을 UI 모델로 변환
@@ -43,6 +51,7 @@ class SearchResultPagingSource @Inject constructor(
                         val isBookmarked = bookmarkLocalDataSource.getBookmarkedThumbnailUrls().contains(media.thumbnailUrl)
                         SearchResultUiModel.fromMedia(media, isBookmarked)
                     }
+                    Log.d(TAG, "Returned ${cachedUiModels.size} items from cache")
                     return LoadResult.Page(
                         data = cachedUiModels,
                         prevKey = null,
@@ -51,12 +60,16 @@ class SearchResultPagingSource @Inject constructor(
                 }
             }
 
+            Log.d(TAG, "Making network request for query: $query, page: $page")
+
             // 북마크된 미디어의 thumbnailUrl 목록 조회
             val bookmarkedThumbnailUrls = bookmarkLocalDataSource.getBookmarkedThumbnailUrls()
 
             // 이미지와 비디오를 병렬로 검색
             val imageResponse = imageRemoteDataSource.searchImages(query, page, pageSize)
             val videoResponse = videoRemoteDataSource.searchVideos(query, page, pageSize)
+            
+            Log.d(TAG, "Received ${imageResponse.documents.size} images and ${videoResponse.documents.size} videos from network")
             
             // 이미지와 비디오 미디어 리스트를 합침
             val imageMediaList = imageResponse.documents.map { searchResultMapper.fromImageDto(it) }
@@ -79,6 +92,7 @@ class SearchResultPagingSource @Inject constructor(
             
             // 첫 페이지인 경우 캐시에 저장 (Domain 모델 저장)
             if (page == 1) {
+                Log.d(TAG, "Caching ${sortedSearchResultLists.size} items for query: $query")
                 searchCacheManager.cacheMediaList(query, sortedSearchResultLists)
             }
             
@@ -91,12 +105,15 @@ class SearchResultPagingSource @Inject constructor(
                 page + 1
             }
 
+            Log.d(TAG, "Returning ${searchResultUiModels.size} items from network, nextKey: $nextKey")
+
             LoadResult.Page(
                 data = searchResultUiModels,
                 prevKey = if (page == 1) null else page - 1,
                 nextKey = nextKey
             )
         } catch (e: Exception) {
+            Log.e(TAG, "Error loading data", e)
             LoadResult.Error(e)
         }
     }

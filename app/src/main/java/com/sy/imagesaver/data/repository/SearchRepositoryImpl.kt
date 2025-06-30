@@ -21,13 +21,17 @@ class SearchRepositoryImpl @Inject constructor(
     private val searchCacheManager: SearchCacheManager,
     private val searchResultMapper: SearchResultMapper
 ) : SearchRepository {
+
+    companion object {
+        private const val PAGE_SIZE = 20 // 이미지와 비디오 각각 가져올 개수
+    }
     
     override fun searchMediaPaged(query: String): Flow<PagingData<SearchResultUiModel>> {
         return Pager(
             config = PagingConfig(
-                pageSize = 30,
+                pageSize = PAGE_SIZE * 2, // 이미지와 비디오 합쳐서 총 40개
                 enablePlaceholders = false,
-                prefetchDistance = 3
+                prefetchDistance = 1 // 미리 가져오는 페이지 수를 1로 제한
             ),
             pagingSourceFactory = {
                 SearchResultPagingSource(
@@ -36,30 +40,15 @@ class SearchRepositoryImpl @Inject constructor(
                     bookmarkLocalDataSource,
                     searchCacheManager,
                     searchResultMapper,
-                    query
+                    query,
+                    PAGE_SIZE
                 )
             }
         ).flow
     }
     
     override fun searchMediaPagedWithCache(query: String): Flow<PagingData<SearchResultUiModel>> {
-        return Pager(
-            config = PagingConfig(
-                pageSize = 30,
-                enablePlaceholders = false,
-                prefetchDistance = 3
-            ),
-            pagingSourceFactory = {
-                SearchResultPagingSource(
-                    imageRemoteDataSource,
-                    videoRemoteDataSource,
-                    bookmarkLocalDataSource,
-                    searchCacheManager,
-                    searchResultMapper,
-                    query
-                )
-            }
-        ).flow
+        return searchMediaPaged(query)
     }
     
     override suspend fun getBookmarkedThumbnailUrls(): List<String> {

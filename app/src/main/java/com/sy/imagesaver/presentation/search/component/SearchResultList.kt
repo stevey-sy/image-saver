@@ -54,7 +54,7 @@ fun SearchResultList(
                     showBookmarkIcon = true,
                     modifier = Modifier.fillMaxWidth(),
                     onItemClick = {
-                        viewModel.saveMedia(mediaItem)
+                        viewModel.addBookmark(mediaItem)
                     }
                 )
             }
