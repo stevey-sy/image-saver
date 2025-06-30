@@ -16,7 +16,6 @@ data class CachedQueryInfo(
 class SearchCacheManager @Inject constructor() {
     
     private val cache = mutableMapOf<String, CachedSearchResult>()
-    private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
     
     fun isCacheValid(query: String): Boolean {
         val cachedResult = cache[query]
@@ -50,18 +49,8 @@ class SearchCacheManager @Inject constructor() {
         }
     }
     
-    fun getRemainingTime(query: String): Long {
-        val cachedResult = cache[query]
-        return cachedResult?.getRemainingTimeMinutes() ?: 0L
-    }
-    
     fun clearCache() {
         cache.clear()
-    }
-    
-    fun removeExpiredCache() {
-        val expiredQueries = cache.filterValues { it.isExpired() }.keys
-        expiredQueries.forEach { cache.remove(it) }
     }
     
     @OptIn(ExperimentalTime::class)
@@ -71,9 +60,7 @@ class SearchCacheManager @Inject constructor() {
         val oldestQuery = cache.minByOrNull { it.value.cachedAt }?.key
         oldestQuery?.let { cache.remove(it) }
     }
-    
-    fun getCacheSize(): Int = cache.size
-    
+
     fun getCacheInfo(): Map<String, Long> {
         return cache.mapValues { (_, cachedResult) ->
             cachedResult.getRemainingTimeMinutes()
@@ -82,10 +69,6 @@ class SearchCacheManager @Inject constructor() {
     
     fun getCachedQueries(): List<String> {
         return cache.keys.toList()
-    }
-    
-    fun hasCachedQuery(query: String): Boolean {
-        return cache.containsKey(query) && !cache[query]!!.isExpired()
     }
     
     @OptIn(ExperimentalTime::class)
