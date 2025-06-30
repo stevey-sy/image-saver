@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.sy.imagesaver.domain.usecase.GetBookmarkListUseCase
 import com.sy.imagesaver.domain.usecase.DeleteBookmarkUseCase
 import com.sy.imagesaver.presentation.model.BookmarkUiModel
+import com.sy.imagesaver.presentation.model.mapper.BookmarkUiModelMapper
 import com.sy.imagesaver.domain.data.MediaType
 import com.sy.imagesaver.di.BookmarkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,7 +22,8 @@ import javax.inject.Inject
 class BookMarkViewModel @Inject constructor(
     private val getBookmarkListUseCase: GetBookmarkListUseCase,
     private val deleteBookmarkUseCase: DeleteBookmarkUseCase,
-    private val bookmarkManager: BookmarkManager
+    private val bookmarkManager: BookmarkManager,
+    private val bookmarkUiModelMapper: BookmarkUiModelMapper
 ) : ViewModel() {
     
     private val _bookmarkedMedia = MutableStateFlow<List<BookmarkUiModel>>(emptyList())
@@ -146,7 +148,7 @@ class BookMarkViewModel @Inject constructor(
                 
                 getBookmarkListUseCase.getAllBookmarkedMedia()
                     .map { bookmarks ->
-                        bookmarks.map { BookmarkUiModel.fromBookmark(it) }
+                        bookmarkUiModelMapper.toUiModelList(bookmarks)
                     }
                     .collect { bookmarkUiModels ->
                         _bookmarkedMedia.value = bookmarkUiModels
@@ -168,7 +170,7 @@ class BookMarkViewModel @Inject constructor(
                 
                 getBookmarkListUseCase.getBookmarkedMediaByType(type)
                     .map { bookmarks ->
-                        bookmarks.map { BookmarkUiModel.fromBookmark(it) }
+                        bookmarkUiModelMapper.toUiModelList(bookmarks)
                     }
                     .collect { bookmarkUiModels ->
                         _bookmarkedMedia.value = bookmarkUiModels

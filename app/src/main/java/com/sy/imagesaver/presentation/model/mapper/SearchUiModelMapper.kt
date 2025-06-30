@@ -1,15 +1,15 @@
-package com.sy.imagesaver.data.mapper
+package com.sy.imagesaver.presentation.model.mapper
 
 import com.sy.imagesaver.domain.data.SearchResult
 import com.sy.imagesaver.presentation.model.SearchResultUiModel
 import com.sy.imagesaver.util.parseToInstant
-import kotlin.time.ExperimentalTime
 import javax.inject.Inject
+import kotlin.time.ExperimentalTime
 
 class SearchUiModelMapper @Inject constructor() {
-    
+
     @OptIn(ExperimentalTime::class)
-    fun toMedia(searchResultUiModel: SearchResultUiModel): SearchResult {
+    fun toSearchResult(searchResultUiModel: SearchResultUiModel): SearchResult {
         return when (searchResultUiModel) {
             is SearchResultUiModel.Image -> SearchResult.Image(
                 id = searchResultUiModel.id,
@@ -27,8 +27,4 @@ class SearchUiModelMapper @Inject constructor() {
             )
         }
     }
-    
-    fun toMediaList(searchResultUiModels: List<SearchResultUiModel>): List<SearchResult> {
-        return searchResultUiModels.map { toMedia(it) }
-    }
-} 
+}
