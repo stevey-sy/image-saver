@@ -7,7 +7,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.sy.imagesaver.R
 import com.sy.imagesaver.data.cache.CachedQueryInfo
-import com.sy.imagesaver.data.mapper.MediaUiModelMapper
+import com.sy.imagesaver.data.mapper.SearchUiModelMapper
 import com.sy.imagesaver.domain.usecase.SearchMediaUseCase
 import com.sy.imagesaver.domain.usecase.AddBookmarkUseCase
 import com.sy.imagesaver.presentation.model.SearchResultUiModel
@@ -33,7 +33,7 @@ class SearchViewModel @Inject constructor(
     private val addBookmarkUseCase: AddBookmarkUseCase,
     private val searchRepository: SearchRepository,
     private val bookmarkManager: BookmarkManager,
-    private val mediaUiModelMapper: MediaUiModelMapper,
+    private val searchUiModelMapper: SearchUiModelMapper,
     private val networkUtil: NetworkUtil,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
@@ -202,7 +202,7 @@ class SearchViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 // MediaUiModel을 Media로 변환
-                val media = mediaUiModelMapper.toMedia(searchResultUiModel)
+                val media = searchUiModelMapper.toMedia(searchResultUiModel)
                 
                 val id = addBookmarkUseCase(media)
                 

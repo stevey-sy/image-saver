@@ -12,7 +12,7 @@ import javax.inject.Inject
 class BookmarkEntityMapper @Inject constructor() {
     
     @OptIn(ExperimentalTime::class)
-    fun toMediaUiModel(bookmarkEntity: BookmarkEntity): SearchResultUiModel {
+    fun toUiModel(bookmarkEntity: BookmarkEntity): SearchResultUiModel {
         return when (bookmarkEntity.type) {
             MediaType.IMAGE -> SearchResultUiModel.Image(
                 id = bookmarkEntity.id.toString(),
@@ -32,6 +32,6 @@ class BookmarkEntityMapper @Inject constructor() {
     }
     
     fun toMediaUiModelList(bookmarkEntities: List<BookmarkEntity>): List<SearchResultUiModel> {
-        return bookmarkEntities.map { toMediaUiModel(it) }
+        return bookmarkEntities.map { toUiModel(it) }
     }
 } 

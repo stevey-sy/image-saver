@@ -12,7 +12,7 @@ import com.sy.imagesaver.presentation.model.SearchResultUiModel
 import javax.inject.Inject
 import kotlin.time.ExperimentalTime
 
-class MediaPagingSource @Inject constructor(
+class SearchResultPagingSource @Inject constructor(
     private val imageRemoteDataSource: ImageRemoteDataSource,
     private val videoRemoteDataSource: VideoRemoteDataSource,
     private val bookmarkLocalDataSource: BookmarkLocalDataSource,
@@ -38,8 +38,13 @@ class MediaPagingSource @Inject constructor(
             if (page == 1 && searchCacheManager.isCacheValid(query)) {
                 val cachedMediaList = searchCacheManager.getCachedMediaList(query)
                 if (cachedMediaList != null) {
+                    // Domain 모델을 UI 모델로 변환
+                    val cachedUiModels = cachedMediaList.map { media ->
+                        val isBookmarked = bookmarkLocalDataSource.getBookmarkedThumbnailUrls().contains(media.thumbnailUrl)
+                        SearchResultUiModel.fromMedia(media, isBookmarked)
+                    }
                     return LoadResult.Page(
-                        data = cachedMediaList,
+                        data = cachedUiModels,
                         prevKey = null,
                         nextKey = null // 캐시된 데이터는 한 페이지로 간주
                     )
@@ -72,9 +77,9 @@ class MediaPagingSource @Inject constructor(
                 SearchResultUiModel.fromMedia(media, isBookmarked)
             }
             
-            // 첫 페이지인 경우 캐시에 저장
+            // 첫 페이지인 경우 캐시에 저장 (Domain 모델 저장)
             if (page == 1) {
-                searchCacheManager.cacheMediaList(query, searchResultUiModels)
+                searchCacheManager.cacheMediaList(query, sortedSearchResultLists)
             }
             
             // 메타데이터는 이미지 기준으로 사용

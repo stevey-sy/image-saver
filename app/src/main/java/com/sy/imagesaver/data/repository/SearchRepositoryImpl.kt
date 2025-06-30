@@ -9,7 +9,7 @@ import com.sy.imagesaver.data.local.datasource.BookmarkLocalDataSource
 import com.sy.imagesaver.data.mapper.SearchResultMapper
 import com.sy.imagesaver.data.remote.datasource.ImageRemoteDataSource
 import com.sy.imagesaver.data.remote.datasource.VideoRemoteDataSource
-import com.sy.imagesaver.data.remote.paging.MediaPagingSource
+import com.sy.imagesaver.data.remote.paging.SearchResultPagingSource
 import com.sy.imagesaver.presentation.model.SearchResultUiModel
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -30,7 +30,7 @@ class SearchRepositoryImpl @Inject constructor(
                 prefetchDistance = 3
             ),
             pagingSourceFactory = {
-                MediaPagingSource(
+                SearchResultPagingSource(
                     imageRemoteDataSource,
                     videoRemoteDataSource,
                     bookmarkLocalDataSource,
@@ -50,7 +50,7 @@ class SearchRepositoryImpl @Inject constructor(
                 prefetchDistance = 3
             ),
             pagingSourceFactory = {
-                MediaPagingSource(
+                SearchResultPagingSource(
                     imageRemoteDataSource,
                     videoRemoteDataSource,
                     bookmarkLocalDataSource,

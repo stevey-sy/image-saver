@@ -1,6 +1,6 @@
 package com.sy.imagesaver.data.cache
 
-import com.sy.imagesaver.presentation.model.SearchResultUiModel
+import com.sy.imagesaver.domain.data.SearchResult
 import com.sy.imagesaver.util.formatHHmm
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -23,7 +23,7 @@ class SearchCacheManager @Inject constructor() {
         return cachedResult != null && !cachedResult.isExpired()
     }
     
-    fun getCachedMediaList(query: String): List<SearchResultUiModel>? {
+    fun getCachedMediaList(query: String): List<SearchResult>? {
         val cachedResult = cache[query]
         return if (cachedResult != null && !cachedResult.isExpired()) {
             cachedResult.mediaList
@@ -37,7 +37,7 @@ class SearchCacheManager @Inject constructor() {
     }
     
     @OptIn(ExperimentalTime::class)
-    fun cacheMediaList(query: String, mediaList: List<SearchResultUiModel>) {
+    fun cacheMediaList(query: String, mediaList: List<SearchResult>) {
         val cachedResult = CachedSearchResult(
             query = query,
             mediaList = mediaList

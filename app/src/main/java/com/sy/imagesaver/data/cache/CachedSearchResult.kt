@@ -1,6 +1,6 @@
 package com.sy.imagesaver.data.cache
 
-import com.sy.imagesaver.presentation.model.SearchResultUiModel
+import com.sy.imagesaver.domain.data.SearchResult
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
@@ -9,7 +9,7 @@ import javax.inject.Inject
 
 data class CachedSearchResult @OptIn(ExperimentalTime::class) @Inject constructor(
     val query: String,
-    val mediaList: List<SearchResultUiModel> = emptyList(),
+    val mediaList: List<SearchResult> = emptyList(),
     val cachedAt: Instant = Clock.System.now()
 ) {
     companion object {

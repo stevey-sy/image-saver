@@ -6,7 +6,7 @@ import com.sy.imagesaver.util.parseToInstant
 import kotlin.time.ExperimentalTime
 import javax.inject.Inject
 
-class MediaUiModelMapper @Inject constructor() {
+class SearchUiModelMapper @Inject constructor() {
     
     @OptIn(ExperimentalTime::class)
     fun toMedia(searchResultUiModel: SearchResultUiModel): SearchResult {
