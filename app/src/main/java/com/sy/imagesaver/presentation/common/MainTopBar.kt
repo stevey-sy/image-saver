@@ -23,6 +23,7 @@ import com.sy.imagesaver.presentation.navigation.Screen
 import com.sy.imagesaver.presentation.theme.AppIcons
 import com.sy.imagesaver.presentation.theme.Orange
 import com.sy.imagesaver.data.cache.CachedQueryInfo
+import com.sy.imagesaver.presentation.model.BookmarkFilterType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,7 +32,7 @@ fun MainTopBar(
     bookMarkViewModel: BookmarkViewModel,
     showFilterDropdown: Boolean,
     onFilterDropdownChange: (Boolean) -> Unit,
-    selectedFilter: MediaType?,
+    selectedFilter: BookmarkFilterType,
     showHistoryDropdown: Boolean = false,
     onHistoryDropdownChange: (Boolean) -> Unit = {},
     cachedQueryList: List<CachedQueryInfo> = emptyList(),
@@ -51,13 +52,17 @@ fun MainTopBar(
             if (isBookmarkScreen) {
                 Box {
                     IconButton(onClick = { onFilterDropdownChange(true) }) {
-                        Icon(AppIcons.Filter, contentDescription = "Filter")
+                        Icon(AppIcons.Filter, contentDescription = stringResource(R.string.filter_icon_description))
                     }
                     DropdownMenu(
                         expanded = showFilterDropdown,
                         onDismissRequest = { onFilterDropdownChange(false) }
                     ) {
-                        listOf("전체", "이미지", "영상").forEach { filter ->
+                        listOf(
+                            stringResource(R.string.filter_all),
+                            stringResource(R.string.filter_image),
+                            stringResource(R.string.filter_video)
+                        ).forEach { filter ->
                             DropdownMenuItem(
                                 text = { Text(filter) },
                                 onClick = {
@@ -66,15 +71,15 @@ fun MainTopBar(
                                 },
                                 leadingIcon = {
                                     val isSelected = when (filter) {
-                                        "전체" -> selectedFilter == null
-                                        "이미지" -> selectedFilter == MediaType.IMAGE
-                                        "영상" -> selectedFilter == MediaType.VIDEO
+                                        stringResource(R.string.filter_all) -> selectedFilter == BookmarkFilterType.ALL
+                                        stringResource(R.string.filter_image) -> selectedFilter == BookmarkFilterType.IMAGE
+                                        stringResource(R.string.filter_video) -> selectedFilter == BookmarkFilterType.VIDEO
                                         else -> false
                                     }
                                     if (isSelected) {
                                         Icon(
                                             Icons.Default.Check,
-                                            contentDescription = "선택됨",
+                                            contentDescription = stringResource(R.string.selected_description),
                                             tint = Orange
                                         )
                                     }
@@ -84,7 +89,7 @@ fun MainTopBar(
                     }
                 }
                 IconButton(onClick = { bookMarkViewModel.toggleDeleteMode() }) {
-                    Icon(AppIcons.Trash, contentDescription = "Trash")
+                    Icon(AppIcons.Trash, contentDescription = stringResource(R.string.trash_icon_description))
                 }
             } else if (isSearchScreen) {
                 // SearchScreen에서 History 아이콘 표시
@@ -92,7 +97,7 @@ fun MainTopBar(
                     IconButton(onClick = { onHistoryDropdownChange(true) }) {
                         Icon(
                             imageVector = AppIcons.History,
-                            contentDescription = "Search History"
+                            contentDescription = stringResource(R.string.history_icon_description)
                         )
                     }
                     DropdownMenu(
@@ -101,14 +106,14 @@ fun MainTopBar(
                     ) {
                         if (cachedQueryList.isEmpty()) {
                             DropdownMenuItem(
-                                text = { Text("검색 기록이 없습니다") },
+                                text = { Text(stringResource(R.string.no_search_history)) },
                                 onClick = { onHistoryDropdownChange(false) }
                             )
                         } else {
                             cachedQueryList.forEach { queryInfo ->
                                 DropdownMenuItem(
                                     text = { 
-                                        Text("${queryInfo.query} (${queryInfo.cachedTime})")
+                                        Text(stringResource(R.string.search_history_format, queryInfo.query, queryInfo.cachedTime))
                                     },
                                     onClick = {
                                         onHistoryItemClick(queryInfo.query)
