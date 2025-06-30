@@ -25,15 +25,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.sy.imagesaver.domain.data.MediaType
+import com.sy.imagesaver.presentation.model.BookmarkFilterType
 
 @Composable
 fun FilterStatusView(
-    filterType: MediaType?,
+    filterType: BookmarkFilterType,
     onClearFilter: () -> Unit
 ) {
     AnimatedVisibility(
-        visible = filterType != null,
+        visible = filterType != BookmarkFilterType.ALL,
         enter = slideInVertically(
             animationSpec = tween(300),
             initialOffsetY = { -it }
@@ -65,9 +65,9 @@ fun FilterStatusView(
             ) {
                 Text(
                     text = when (filterType) {
-                        MediaType.IMAGE -> "이미지만 보여요."
-                        MediaType.VIDEO -> "영상만 보여요."
-                        null -> ""
+                        BookmarkFilterType.IMAGE -> "이미지만 보여요."
+                        BookmarkFilterType.VIDEO -> "영상만 보여요."
+                        BookmarkFilterType.ALL -> ""
                     },
                     style = typography.bodyMedium,
                     color = Color.White

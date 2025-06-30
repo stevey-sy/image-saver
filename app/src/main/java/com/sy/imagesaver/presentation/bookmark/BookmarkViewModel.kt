@@ -8,6 +8,7 @@ import com.sy.imagesaver.presentation.model.BookmarkUiModel
 import com.sy.imagesaver.presentation.model.mapper.BookmarkUiModelMapper
 import com.sy.imagesaver.domain.data.MediaType
 import com.sy.imagesaver.presentation.manager.BookmarkManager
+import com.sy.imagesaver.presentation.model.BookmarkFilterType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -144,23 +145,28 @@ class BookmarkViewModel @Inject constructor(
     }
 
     fun updateFilter(filter: String) {
-        val mediaType = when (filter) {
-            "전체" -> null
-            "이미지" -> MediaType.IMAGE
-            "영상" -> MediaType.VIDEO
-            else -> null
-        }
-        updateUiState { it.copy(selectedFilter = mediaType) }
+        val filterType = BookmarkFilterType.fromString(filter)
+        updateUiState { it.copy(selectedFilter = filterType) }
 
-        when (filter) {
-            "전체" -> loadBookmarkedMedia()
-            "이미지" -> loadBookmarkedMediaByType(MediaType.IMAGE)
-            "영상" -> loadBookmarkedMediaByType(MediaType.VIDEO)
+        when (filterType) {
+            BookmarkFilterType.ALL -> loadBookmarkedMedia()
+            BookmarkFilterType.IMAGE -> loadBookmarkedMediaByType(MediaType.IMAGE)
+            BookmarkFilterType.VIDEO -> loadBookmarkedMediaByType(MediaType.VIDEO)
+        }
+    }
+
+    fun updateFilter(filterType: BookmarkFilterType) {
+        updateUiState { it.copy(selectedFilter = filterType) }
+
+        when (filterType) {
+            BookmarkFilterType.ALL -> loadBookmarkedMedia()
+            BookmarkFilterType.IMAGE -> loadBookmarkedMediaByType(MediaType.IMAGE)
+            BookmarkFilterType.VIDEO -> loadBookmarkedMediaByType(MediaType.VIDEO)
         }
     }
 
     fun clearFilter() {
-        updateUiState { it.copy(selectedFilter = null) }
+        updateUiState { it.copy(selectedFilter = BookmarkFilterType.ALL) }
         loadBookmarkedMedia()
     }
 
@@ -249,7 +255,7 @@ class BookmarkViewModel @Inject constructor(
         val error: String? = null,
         val isDeleteMode: Boolean = false,
         val selectedItems: Set<Int> = emptySet(),
-        val selectedFilter: MediaType? = null,
+        val selectedFilter: BookmarkFilterType = BookmarkFilterType.ALL,
         val showImagePopup: Boolean = false,
         val selectedImageUrl: String? = null,
     )
